@@ -1,0 +1,204 @@
+body {
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+}
+
+header {
+	height: 80px;
+	display: flex;
+	background-color: #355B3E;
+	align-items:center;
+  justify-content: center;
+  max-width: 2000px;
+  margin: auto;
+  position: fixed; 
+  top: 0; 
+  left: 0;
+  right: 0;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.outer-flex-container{
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inner-flex-container{
+  max-width: 100%;
+}
+
+.inner-flex-container > * {
+  margin: 8px;
+}
+
+.image-container {
+  order: 0;
+  display: flex;
+  background-color: #F5DBC4;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-image {
+  max-width: 50%; 
+  height: auto; 
+  padding-top: 10%;
+  padding-bottom: 5%;
+}
+
+.logo-container .logo,
+.paragraph-450  {
+  display: none;
+}
+.errore {
+  margin-bottom: -30px;
+}
+
+.form-container {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 50px;
+  max-width: 100%;
+}
+
+.data-input-container {
+  margin-top: 30px;
+}
+
+.buttons-container {
+  flex-direction: row;
+  margin-top: 50px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.full-btn,
+.border-btn {
+  min-width: 47%;
+}
+
+@media screen and (max-width: 190px){
+  .full-btn,
+  .border-btn {
+    flex-grow: 1;
+    margin-bottom: 10px;
+  }
+}
+
+
+@media screen and (min-width: 768px) and (max-width: 1519px) {
+  html, body {
+    margin: 0;
+  }
+  body {
+    background-color: #355B3E;
+    width: 100%;
+  }
+  .outer-flex-container {
+    display: flex;
+    background-color: white;
+    margin: auto;
+    max-width: 768px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 50px;
+    margin-top: 80px;
+    border-radius: 10px;
+    border: 1px solid #ccc
+  }
+  .image-container{
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border: 1px solid #ccc
+  }
+  .login-image {
+    max-width: 50%; 
+    height: auto; 
+    padding-top: 15%;
+  }
+  .form-container {
+    margin-bottom: 50px;
+  }
+}
+
+@media screen and (min-width: 1520px) {
+  header {
+    display: none;
+  }
+  html, body {
+    margin: 0;
+  }
+  body {
+    background-color: #355B3E;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .outer-flex-container {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    max-width: 70%;
+    justify-content: center;
+    height: 600px;
+    border-radius: 10px;
+    border: 1px solid #ccc
+  }
+
+  .inner-flex-container .logo,
+  .message-container .paragraph-450 {
+    display: block;
+  }
+
+  .message-container,
+  .input-container,
+  .buttons-container {
+    margin-top: 20px;
+  }
+
+  .message-container .paragraph-450 {
+    margin-bottom: 20px;
+  }
+
+  .buttons-container {
+    margin-top: 40px;
+    margin-bottom: 100px;
+  }
+
+  .form-container {
+    width: 65%;
+    height: auto;
+    max-height: 600px;
+    padding-left: 60px;
+    padding-right: 60px;
+    margin-top: 70px;
+    padding-top: 50px;
+  }
+
+  .image-container {
+    order: 2;
+    height: 100%;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border: 1px solid #ccc
+  }
+
+  .login-image {
+    max-width: 65%;
+    height: auto;
+    margin: 15%;
+  }
+}

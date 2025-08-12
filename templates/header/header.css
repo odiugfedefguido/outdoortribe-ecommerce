@@ -1,0 +1,88 @@
+header {
+  font-family: "Roboto", sans-serif;
+	height: 60px;
+	display: flex;
+	flex-direction: row;
+	background-color: #355B3E;
+	align-items:center;
+  /* max-width: 2000px; */
+  margin: auto;
+  position: fixed; 
+  top: 0; /* Posiziona l'header in cima alla finestra del browser */
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.left-section {
+	flex: 1;
+	display: flex;
+}
+
+.right-section {
+	display: flex;
+	align-items: center;
+}
+
+.logo {
+	margin-left: 10px;
+	height: 45px;
+}
+
+.menu-icon {
+  margin-right: 10px;
+	height: 50px;
+	display: none	;
+}
+
+.menu {
+	position: absolute; /* o relative/fixed in base alle tue esigenze */
+  top: 65px; /* posizionamento verticale desiderato */
+  right: 0px; /* posizionamento orizzontale desiderato */
+  width: 130px; /* larghezza desiderata */
+  background-color: #355B3E; /* colore di sfondo */
+  color: #ffffff; /* colore del testo */
+  padding: 20px; /* spaziatura interna */
+  align-items: center;
+}
+
+.menu a {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 18px;
+	text-decoration: none;
+	padding: 0 15px;
+}
+
+@media screen and (max-width: 768px) {
+	.menu {
+		display: none; /* Nascondi la navbar su schermi più piccoli */
+	}
+
+	.menu.active {
+		display: flex; /* Mostra la navbar quando è attiva */
+	  flex-direction: column;
+	}
+
+	.menu a {
+    padding: 10px 15px; /* Aggiusta il padding dei link */
+	}
+
+	.menu-icon {
+    display: block; /* Mostra l'icona del menu su schermi più piccoli */
+    cursor: pointer;
+	}
+}
+
+
+@media screen and (min-width: 769px) {
+  .menu {
+    position: static; /* Ripristina il posizionamento predefinito */
+    width: auto; /* Ripristina la larghezza automatica */
+    background-color: transparent; /* Rimuovi il colore di sfondo */
+    color: inherit; /* Eredità il colore del testo */
+    padding: 0; /* Rimuovi la spaziatura interna */
+    display: flex;
+    flex-direction: row;
+  }
+}

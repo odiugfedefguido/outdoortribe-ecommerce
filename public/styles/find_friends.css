@@ -1,0 +1,110 @@
+body {
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.outer-flex-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 100px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 3em;
+  margin: 0;
+}
+
+.form-container label {
+  font-weight: 400;
+}
+
+.inner-flex-container {
+  margin-top: 20px;
+  width: 40%;
+}
+
+.search-box {
+  border: 1px solid #bed5c0;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 10px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.search-box input {
+  border: none;
+  flex-grow: 1;
+  outline: none;
+}
+
+.search-box button {
+  border: none;
+  background-color: #fff;
+}
+
+.search-box button:hover {
+  cursor: pointer;
+}
+
+#search-result {
+  margin: 20px 0 70px 0;
+}
+
+.search-output {
+  display: flex;
+  align-items: center;
+  margin: 15px 0 15px 0;
+}
+
+.line-container{
+  border-bottom: 2px solid #e0e0e0;
+  margin: 0 auto;
+  width: 95%;
+}
+
+#search-result .line-container:last-of-type {
+  display: none;
+}
+
+.search-output p a {
+  text-decoration: none;
+  color: inherit;
+}
+.search-output p {
+  margin-left: 10px;
+}
+
+
+.search-output img {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.search-output img[src="/ecommerce_from_outdoortribe/assets/icons/profile.svg"]{
+  height: 50px;
+  width: 50px;
+  background-color: black;
+  border: 1.2px solid black;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.empty-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media screen and (max-width: 768px) { 
+  .search-box input {
+    width: 75%;
+  }
+}

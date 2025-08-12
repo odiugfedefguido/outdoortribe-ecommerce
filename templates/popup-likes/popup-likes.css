@@ -1,0 +1,13 @@
+#likes-list {
+  list-style-type: none; /* Rimuove il pallino */
+  padding: 0; /* Rimuove il padding predefinito */
+  margin: 0; /* Rimuove il margine predefinito */
+}
+
+#likes-list li {
+  margin-bottom: 10px;
+}
+
+#likes-list a {
+  text-decoration: none; /* Rimuove la sottolineatura */
+}

@@ -1,0 +1,25 @@
+.footer-nav{
+  height: 60px;
+	display: flex;
+	flex-direction: row;
+	background-color: #355B3E;
+	align-items:center;
+  /* max-width: 2000px; */
+  margin: auto;
+  justify-content:space-around;
+  position: fixed; 
+  bottom: 0; 
+  left: 0;
+  right: 0;
+}
+
+.footer-nav img {
+  height: 43px;
+  margin-top: 5px;
+}
+
+@media screen and (max-width: 768px) {
+  .footer-nav img {
+    height: 35px;
+  }
+}

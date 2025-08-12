@@ -1,0 +1,73 @@
+body {
+
+    font-family: "Roboto", sans-serif;
+    display: flex;
+    justify-content: center;
+    margin: 60px 0 60px 0;
+    padding: 0;
+}
+
+.container {
+    padding: 20px;
+}
+
+.follower {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.profile-picture {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.follower-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-link {
+    font-weight: 500;
+    text-decoration: none;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+
+.view-profile-button {
+    background-color: #3498db;
+    color: #ffffff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.view-profile-button:hover {
+    background-color: #2980b9;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 10px 0;
+}
+
+
+.full-btn{
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 20px;
+  color: white;
+  background-color: #029664;
+  text-decoration: none; 
+}
+
+

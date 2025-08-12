@@ -1,0 +1,12 @@
+body {
+    display: flex;
+    justify-content: center;
+    font-family: "Roboto", sans-serif;
+    margin-bottom: 100px;
+    font-size: 16px; /* Aumenta la dimensione del testo */
+}
+
+main {
+    margin-top: 150px;
+}
+

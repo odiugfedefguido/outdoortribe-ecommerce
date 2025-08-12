@@ -1,0 +1,29 @@
+/* Stile generale della griglia */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* La larghezza minima è di 200px e la larghezza massima è flessibile */
+    gap: 20px; /* Spazio tra le immagini */
+  }
+  
+  /* Stile delle singole foto */
+  .photo {
+    width: 100%; /* Occupa tutta la larghezza del suo contenitore */
+    overflow: hidden; /* Nasconde eventuali overflow delle immagini quadrate */
+  }
+  
+  .photo img {
+    width: 100%; /* Riempie completamente il contenitore */
+    height: auto; /* Altezza automatica per mantenere l'aspetto proporzionale */
+    display: block; /* Rimuove lo spazio extra sotto l'immagine */
+  }
+  
+  /* Stile per rendere le immagini quadrate */
+  .photo:before {
+    content: "";
+    display: block;
+    padding-top: 100%; /* Rapporto di 1:1 per rendere l'immagine quadrata */
+  }
+  
+ 
+  
+  
