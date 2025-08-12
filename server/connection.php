@@ -10,7 +10,7 @@
 $servername = "localhost";
 $username = "root"; // Il tuo nome utente del database
 $password = ""; // La tua password del database
-$dbname = "databaseweb"; // Il nome del tuo database
+$dbname = "ecommerceweb"; // Il nome del tuo database
 
 // Creazione della connessione
 $conn = new mysqli($servername, $username, $password, $dbname);
