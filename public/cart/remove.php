@@ -9,4 +9,4 @@ session_start();
 require_once __DIR__ . '/../../server/connection.php';
 // TODO
 
-<?php include __DIR__ . "/../../templates/footer/footer.html"; ?>
+include __DIR__ . "/../../templates/footer/footer.html"; ?>
