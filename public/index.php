@@ -1,19 +1,19 @@
 <?php
 /*
  * File: public/index.php
- * Scopo: Home e‑commerce con vetrina prodotti + ricerca.
+ * Scopo: Home e-commerce con vetrina prodotti + ricerca.
  * Compatibile con schema: category(id,name,slug), product(category_id, image_filename…)
  */
 session_start();
 require_once __DIR__ . '/../server/connection.php';
 require_once __DIR__ . '/config_path.php';
-//require_once __DIR__ . '/auth_guard.php';     // obbliga login
+// require_once __DIR__ . '/auth_guard.php';   // ← sblocca se vuoi l’accesso solo loggati
 require_once __DIR__ . '/img_path.php';       // helper per immagini prodotto
 
 /* -------------------------- Config vetrina -------------------------- */
-$limit = 12;                       // numero prodotti in home
-$q = trim($_GET['q'] ?? '');       // ricerca veloce
-$cat = (int)($_GET['cat'] ?? 0);   // filtro categoria
+$limit = 12;                        // numero prodotti in home
+$q    = trim($_GET['q'] ?? '');     // ricerca veloce
+$cat  = (int)($_GET['cat'] ?? 0);   // filtro categoria
 
 /* -------------------------- Carico categorie ------------------------ */
 $cats = [];
@@ -21,18 +21,28 @@ if ($res = $conn->query("SELECT id, name FROM category WHERE is_active=1 ORDER B
   $cats = $res->fetch_all(MYSQLI_ASSOC);
 }
 
-/* -------------------------- Query prodotti -------------------------- */
-$where = "p.is_active=1";
+/* -------------------------- Costruzione query prodotti -------------- */
+$where  = "p.is_active=1";
 $params = [];
 $types  = '';
 
 if ($q !== '') {
-  $where .= " AND (p.title LIKE CONCAT('%', ?, '%') OR p.description LIKE CONCAT('%', ?, '%'))";
-  $params[] = $q; $params[] = $q; $types .= 'ss';
+  // WORKAROUND anti "Illegal mix of collations":
+  // - collate le colonne a utf8mb4_unicode_ci
+  // - converto e collate il placeholder a utf8mb4_unicode_ci
+  $where .= "
+    AND (
+      p.title       COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%')
+      OR p.description COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%')
+    )";
+  $params[] = $q; 
+  $params[] = $q; 
+  $types   .= 'ss';
 }
 if ($cat > 0) {
-  $where .= " AND p.category_id = ?";
-  $params[] = $cat; $types .= 'i';
+  $where   .= " AND p.category_id = ?";
+  $params[] = $cat;
+  $types   .= 'i';
 }
 
 $sql = "
@@ -42,10 +52,11 @@ $sql = "
   ORDER BY p.id DESC
   LIMIT ?
 ";
-$params[] = $limit; $types .= 'i';
+$params[] = $limit; 
+$types   .= 'i';
 
 $stmt = $conn->prepare($sql);
-if ($types !== '') { $stmt->bind_param($types, ...$params); }
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
@@ -54,9 +65,10 @@ $stmt->close();
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <title>OutdoorTribe – E‑commerce</title>
+  <title>OutdoorTribe – E-commerce</title>
 
   <!-- CSS esistenti nel progetto -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
@@ -64,6 +76,10 @@ $stmt->close();
   <style>
     .home-hero { margin: 12px 0 16px }
     .home-filter { display:flex; gap:8px; flex-wrap:wrap; margin: 12px 0 }
+    .home-filter input, .home-filter select, .home-filter button, .home-filter a {
+      padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd;
+    }
+    .home-filter button { cursor: pointer; }
     .prod-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -72,7 +88,9 @@ $stmt->close();
     .prod-card {
       display: block; text-decoration: none; color: inherit;
       border: 1px solid #ddd; border-radius: 10px; padding: 12px; background: #fff;
+      transition: box-shadow .15s ease;
     }
+    .prod-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.06); }
     .prod-card img {
       width: 100%; height: 160px; object-fit: cover; border-radius: 8px; background: #f7f7f7;
     }
@@ -85,8 +103,8 @@ $stmt->close();
 
 <?php include __DIR__ . "/../templates/header/header.html"; ?>
 
-<section class="home-hero">
-  <h1>Benvenuto nel nuovo E‑commerce</h1>
+<section class="home-hero container">
+  <h1>Benvenuto nel nuovo E-commerce</h1>
   <p>Scopri gli ultimi arrivi e le categorie più cercate.</p>
 
   <!-- Ricerca + filtro categoria -->
@@ -95,17 +113,17 @@ $stmt->close();
     <select name="cat">
       <option value="0">Tutte le categorie</option>
       <?php foreach ($cats as $c): ?>
-        <option value="<?= (int)$c['id'] ?>" <?= $cat===$c['id'] ? 'selected' : '' ?>>
+        <option value="<?= (int)$c['id'] ?>" <?= $cat === (int)$c['id'] ? 'selected' : '' ?>>
           <?= htmlspecialchars($c['name']) ?>
         </option>
       <?php endforeach; ?>
     </select>
     <button type="submit">Filtra</button>
-    <a href="<?= $BASE ?>/public/" style="align-self:center;">Reset</a>
+    <a href="<?= $BASE ?>/public/" style="align-self:center; text-decoration:none;">Reset</a>
   </form>
 </section>
 
-<section>
+<section class="container">
   <div class="home-actions">
     <strong>Vetrina prodotti</strong>
     · <a href="<?= $BASE ?>/public/products/list.php">Vai al catalogo completo</a>

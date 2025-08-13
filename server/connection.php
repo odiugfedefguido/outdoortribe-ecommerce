@@ -1,15 +1,12 @@
 <?php
-/* server/connection.php */
 $servername = "localhost";
 $username   = "root";
 $password   = "";
 $dbname     = "webdatabase";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 
-// charset e collation coerenti
+// Charset + collation coerenti
 $conn->set_charset("utf8mb4");
 $conn->query("SET collation_connection = 'utf8mb4_unicode_ci'");
