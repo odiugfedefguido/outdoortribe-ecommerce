@@ -2,8 +2,9 @@
 // public/cart/remove.php
 session_start();
 require_once __DIR__ . '/../../server/connection.php';
-// Include il file di configurazione del percorso per arrivare a config_path.php
+require_once __DIR__ . '/../../admin/functions.php';
 require_once __DIR__ . '/../config_path.php';
+
 if (!isset($_SESSION['user_id'])) { header('Location: /ecommerce_from_outdoortribe/public/auth/login.php'); exit; }
 
 $itemId = intval($_POST['item_id'] ?? 0);

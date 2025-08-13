@@ -21,13 +21,8 @@ require_once __DIR__ . '/config_path.php';
   <title>E‑commerce</title>
 </head>
 <body>
-<?php include __DIR__ . "/../templates/header/header.php"; ?>
+<?php include __DIR__ . "/../templates/header/header.html"; ?>
 <h1>Benvenuto nel nuovo E‑commerce</h1>
-  <nav>
-    <a href="<?= $BASE ?>/public/products/list.php">Prodotti</a> |
-    <a href="<?= $BASE ?>/public/cart/view.php">Carrello</a> |
-    <a href="<?= $BASE ?>/public/orders/my_orders.php">I miei ordini</a>
-  </nav>
 
   <p>Questo progetto riusa auth e DB del vecchio social. Le funzioni e‑commerce sono da completare.</p>
 
