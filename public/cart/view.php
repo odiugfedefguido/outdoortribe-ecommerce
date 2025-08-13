@@ -1,109 +1,106 @@
 <?php
-/*
- * File: public/cart/view.php
- * Scopo: Visualizza carrello con righe e totale.
- * Stato: IMPLEMENTATO.
- */
 session_start();
+//require_once __DIR__ . '/../auth_guard.php';
 require_once __DIR__ . '/../../server/connection.php';
-require_once __DIR__ . '/../../admin/functions.php';
 require_once __DIR__ . '/../config_path.php';
 
-if (!isset($_SESSION['user_id'])) {
-  header('Location: ' . $BASE . '/public/auth/login.php');
-  exit;
-}
-$userId = (int)$_SESSION['user_id'];
+$userId = (int)($_SESSION['user_id'] ?? 0);
 
-$stmt = $conn->prepare("SELECT id FROM cart WHERE user_id=?");
+// carrello con join prodotti (prezzo corrente a vista; al checkout fisserai il prezzo)
+$sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock
+        FROM cart_item ci
+        JOIN product p ON p.id = ci.product_id
+        WHERE ci.user_id = ?
+        ORDER BY ci.product_id DESC";
+$stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $userId);
 $stmt->execute();
-$cart = $stmt->get_result()->fetch_assoc();
+$items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$items = [];
-$total = 0.0;
-$currency = 'EUR';
-
-if ($cart) {
-  $cartId = (int)$cart['id'];
-  $stmt = $conn->prepare("
-    SELECT ci.id, ci.product_id, ci.qty, ci.unit_price, p.title,
-           (SELECT url FROM product_image pi WHERE pi.product_id=p.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS img
-    FROM cart_item ci
-    JOIN product p ON p.id=ci.product_id
-    WHERE ci.cart_id=?
-    ORDER BY ci.id DESC
-  ");
-  $stmt->bind_param('i', $cartId);
-  $stmt->execute();
-  $rs = $stmt->get_result();
-  while ($row = $rs->fetch_assoc()) {
-    $row['line_total'] = $row['qty'] * $row['unit_price'];
-    $items[] = $row;
-    $total += $row['line_total'];
-  }
-  $stmt->close();
+$subtotal = 0.0;
+foreach ($items as $it) {
+  $subtotal += (float)$it['price'] * (int)$it['qty'];
 }
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <title>Il tuo carrello</title>
+  <meta charset="utf-8">
+  <title>Carrello</title>
+  <link rel="stylesheet" href="/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
+  <style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; }
+    .qty-input { width: 70px; }
+    .actions { display: flex; gap: .5rem; }
+    .totale { text-align: right; font-weight: bold; }
+  </style>
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
 
-<h2>Carrello</h2>
+<section class="container">
+  <h1>Il tuo carrello</h1>
 
-<?php if (empty($items)): ?>
-  <p>Il carrello è vuoto. <a href="<?= $BASE ?>/public/products/list.php">Vai ai prodotti</a></p>
-<?php else: ?>
-  <table border="1" cellpadding="8" cellspacing="0">
-    <tr>
-      <th>Prodotto</th><th>Prezzo</th><th>Q.tà</th><th>Totale riga</th><th></th>
-    </tr>
-    <?php foreach ($items as $it): ?>
-      <tr>
-        <td>
-          <?php if (!empty($it['img'])): ?>
-            <img src="<?= htmlspecialchars($it['img']) ?>" style="width:60px;height:60px;object-fit:cover;vertical-align:middle;">
-          <?php endif; ?>
-          <a href="<?= $BASE ?>/public/products/details.php?id=<?= (int)$it['product_id'] ?>">
-            <?= htmlspecialchars($it['title']) ?>
-          </a>
-        </td>
-        <td><?= number_format($it['unit_price'],2,',','.') . ' ' . $currency ?></td>
-        <td>
-          <form method="post" action="<?= $BASE ?>/public/cart/update.php" style="display:inline;">
-            <input type="hidden" name="item_id" value="<?= (int)$it['id'] ?>">
-            <input type="number" name="qty" value="<?= (int)$it['qty'] ?>" min="1" style="width:70px;">
-            <button type="submit">Aggiorna</button>
-          </form>
-        </td>
-        <td><?= number_format($it['line_total'],2,',','.') . ' ' . $currency ?></td>
-        <td>
-          <form method="post" action="<?= $BASE ?>/public/cart/remove.php" style="display:inline;">
-            <input type="hidden" name="item_id" value="<?= (int)$it['id'] ?>">
-            <button type="submit">Rimuovi</button>
-          </form>
-        </td>
-      </tr>
-    <?php endforeach; ?>
-    <tr>
-      <td colspan="3" style="text-align:right;font-weight:bold;">Totale:</td>
-      <td colspan="2" style="font-weight:bold;"><?= number_format($total,2,',','.') . ' ' . $currency ?></td>
-    </tr>
-  </table>
+  <?php if (!$items): ?>
+    <p>Il carrello è vuoto.</p>
+  <?php else: ?>
+    <form method="post" action="/public/orders/checkout.php">
+      <table>
+        <thead>
+          <tr>
+            <th>Prodotto</th>
+            <th style="width:120px;">Prezzo</th>
+            <th style="width:120px;">Disp.</th>
+            <th style="width:150px;">Quantità</th>
+            <th style="width:120px;">Totale</th>
+            <th style="width:120px;">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($items as $it): 
+            $line = (float)$it['price'] * (int)$it['qty'];
+          ?>
+          <tr>
+            <td><?= htmlspecialchars($it['title']) ?></td>
+            <td><?= number_format((float)$it['price'], 2, ',', '.') . ' ' . htmlspecialchars($it['currency'] ?? 'EUR') ?></td>
+            <td><?= (int)$it['stock'] ?></td>
+            <td>
+              <form method="post" action="/public/cart/update.php" class="actions">
+                <input type="hidden" name="product_id" value="<?= (int)$it['product_id'] ?>">
+                <input class="qty-input" type="number" name="qty" min="0" max="<?= (int)$it['stock'] ?>" value="<?= (int)$it['qty'] ?>">
+                <button type="submit">Aggiorna</button>
+              </form>
+            </td>
+            <td><?= number_format($line, 2, ',', '.') ?> <?= htmlspecialchars($it['currency'] ?? 'EUR') ?></td>
+            <td>
+              <form method="post" action="/public/cart/remove.php">
+                <input type="hidden" name="product_id" value="<?= (int)$it['product_id'] ?>">
+                <button type="submit">Rimuovi</button>
+              </form>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" class="totale">Subtotale</td>
+            <td class="totale"><?= number_format($subtotal, 2, ',', '.') ?> EUR</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
 
-  <p style="margin-top:16px;">
-    <a href="<?= $BASE ?>/public/orders/checkout.php">Procedi al checkout</a>
-  </p>
-<?php endif; ?>
+      <p style="text-align:right; margin-top:1rem;">
+        <button type="submit">Procedi al checkout</button>
+      </p>
+    </form>
+  <?php endif; ?>
+</section>
 
 <?php include __DIR__ . "/../../templates/footer/footer.html"; ?>
 </body>

@@ -1,25 +1,14 @@
 <?php
-/*
- * File: public/cart/remove.php
- * Scopo: Rimuove una riga dal carrello.
- * Stato: IMPLEMENTATO.
- */
 session_start();
+require_once __DIR__ . '/../auth_guard.php';
 require_once __DIR__ . '/../../server/connection.php';
-require_once __DIR__ . '/../../admin/functions.php';
-require_once __DIR__ . '/../config_path.php';
 
-if (!isset($_SESSION['user_id'])) {
-  header('Location: ' . $BASE . '/public/auth/login.php');
-  exit;
-}
-
-$itemId = (int)($_POST['item_id'] ?? 0);
-if ($itemId > 0) {
-  $stmt = $conn->prepare("DELETE FROM cart_item WHERE id=?");
-  $stmt->bind_param('i', $itemId);
+$userId = (int)($_SESSION['user_id'] ?? 0);
+$productId = (int)($_POST['product_id'] ?? 0);
+if ($userId > 0 && $productId > 0) {
+  $stmt = $conn->prepare("DELETE FROM cart_item WHERE user_id=? AND product_id=?");
+  $stmt->bind_param('ii', $userId, $productId);
   $stmt->execute();
   $stmt->close();
 }
-
-header('Location: ' . $BASE . '/public/cart/view.php');
+header("Location: /public/cart/view.php");

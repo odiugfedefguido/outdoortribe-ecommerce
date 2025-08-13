@@ -1,21 +1,15 @@
 <?php
-/* 
- * File: server/connection.php
- * Scopo: Connessione al database (MySQLi).
- * Stato: RIUSO (codice copiato dal progetto OutdoorTribe).
- * ------------------------------------------------------------------
- */
- 
-
+/* server/connection.php */
 $servername = "localhost";
-$username = "root"; // Il tuo nome utente del database
-$password = ""; // La tua password del database
-$dbname = "ecommerceweb"; // Il nome del tuo database
+$username   = "root";
+$password   = "";
+$dbname     = "webdatabase";
 
-// Creazione della connessione
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// Verifica della connessione
-if ($conn == false) {
-    die("Connessione fallita: " . $conn->connect_error);
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
 }
+
+// charset e collation coerenti
+$conn->set_charset("utf8mb4");
+$conn->query("SET collation_connection = 'utf8mb4_unicode_ci'");

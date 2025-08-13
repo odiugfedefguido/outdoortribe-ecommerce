@@ -1,165 +1,114 @@
--- ============================================================
--- OutdoorTribe E‑commerce – Schema DB (MySQL/InnoDB/utf8mb4)
--- Database: ecommerceweb
--- ============================================================
-
-USE `ecommerceweb`;
-
+-- =========================
+-- SCHEMA ECOMMERCEWEB
+-- Pulizia
+-- =========================
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
--- 0) UTENTI (compatibile con login.php / signup.php del social)
+DROP TABLE IF EXISTS order_item;
+DROP TABLE IF EXISTS `order`;
+DROP TABLE IF EXISTS cart_item;
+DROP TABLE IF EXISTS product;
+DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS `user`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- =========================
+-- TABELLE
+-- =========================
+
 CREATE TABLE `user` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(80) NOT NULL,
-  `surname` VARCHAR(80) NOT NULL,
-  `email` VARCHAR(120) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,   -- password_hash() di PHP
-  `role` ENUM('buyer','seller','admin') NOT NULL DEFAULT 'buyer',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_user_email` (`email`)
+  `name` VARCHAR(120) NOT NULL,
+  `email` VARCHAR(190) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `role` ENUM('customer','admin') NOT NULL DEFAULT 'customer',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 1) PROFILO VENDITORE (facoltativo ma utile)
-CREATE TABLE IF NOT EXISTS `seller_profile` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id` INT NOT NULL,
-  `display_name` VARCHAR(120) NOT NULL,
-  `vat_number` VARCHAR(32) NULL,
-  `fiscal_code` VARCHAR(32) NULL,
-  `company_name` VARCHAR(160) NULL,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_seller_profile_user` (`user_id`),
-  CONSTRAINT `fk_seller_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 2) INDIRIZZI UTENTE
-CREATE TABLE IF NOT EXISTS `user_address` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id` INT NOT NULL,
-  `label` VARCHAR(60) NOT NULL,        -- "Casa", "Ufficio", ...
-  `full_name` VARCHAR(120) NOT NULL,
-  `street` VARCHAR(160) NOT NULL,
-  `city` VARCHAR(120) NOT NULL,
-  `province` VARCHAR(80) NULL,
-  `postal_code` VARCHAR(20) NOT NULL,
-  `country` VARCHAR(80) NOT NULL DEFAULT 'Italia',
-  `phone` VARCHAR(40) NULL,
-  `is_default_shipping` TINYINT(1) NOT NULL DEFAULT 0,
-  `is_default_billing` TINYINT(1) NOT NULL DEFAULT 0,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX `idx_user_address_user` (`user_id`),
-  CONSTRAINT `fk_address_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 3) CATEGORIE
-CREATE TABLE IF NOT EXISTS `category` (
+CREATE TABLE category (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(120) NOT NULL,
-  `slug` VARCHAR(140) NOT NULL,
-  UNIQUE KEY `uq_category_slug` (`slug`)
+  `slug` VARCHAR(150) NOT NULL UNIQUE,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 4) PRODOTTI
-CREATE TABLE IF NOT EXISTS `product` (
+CREATE TABLE product (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `seller_id` INT NOT NULL,
-  `title` VARCHAR(255) NOT NULL,
-  `slug` VARCHAR(280) NOT NULL,
-  `description` TEXT NULL,
+  `category_id` INT NULL,
+  `title` VARCHAR(160) NOT NULL,
+  `slug` VARCHAR(180) NOT NULL UNIQUE,
+  `description` TEXT,
   `price` DECIMAL(10,2) NOT NULL,
   `currency` CHAR(3) NOT NULL DEFAULT 'EUR',
   `stock` INT NOT NULL DEFAULT 0,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_product_slug` (`slug`),
-  INDEX `idx_product_seller` (`seller_id`),
-  FULLTEXT KEY `ft_product_title_desc` (`title`, `description`),
-  CONSTRAINT `fk_product_seller` FOREIGN KEY (`seller_id`) REFERENCES `user`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
+  `image_filename` VARCHAR(200) DEFAULT NULL, -- se NULL si usa {id}.png
+  CONSTRAINT fk_prod_cat FOREIGN KEY (category_id) REFERENCES category(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 5) IMMAGINI PRODOTTO
-CREATE TABLE IF NOT EXISTS `product_image` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `product_id` INT NOT NULL,
-  `url` VARCHAR(512) NOT NULL,
-  `sort_order` INT NOT NULL DEFAULT 0,
-  INDEX `idx_img_product` (`product_id`),
-  CONSTRAINT `fk_img_product` FOREIGN KEY (`product_id`) REFERENCES `product`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 6) RELAZIONE PRODOTTO-CATEGORIA (N:N)
-CREATE TABLE IF NOT EXISTS `product_category` (
-  `product_id` INT NOT NULL,
-  `category_id` INT NOT NULL,
-  PRIMARY KEY (`product_id`,`category_id`),
-  CONSTRAINT `fk_pc_product` FOREIGN KEY (`product_id`) REFERENCES `product`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_pc_category` FOREIGN KEY (`category_id`) REFERENCES `category`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 7) CARRELLO
-CREATE TABLE IF NOT EXISTS `cart` (
+CREATE TABLE cart_item (         -- carrello in sessione utente
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` INT NOT NULL,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_cart_user` (`user_id`),
-  CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS `cart_item` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `cart_id` INT NOT NULL,
   `product_id` INT NOT NULL,
-  `qty` INT NOT NULL DEFAULT 1,
-  `unit_price` DECIMAL(10,2) NOT NULL,  -- prezzo al momento dell’aggiunta
-  UNIQUE KEY `uq_cart_product` (`cart_id`,`product_id`),
-  CONSTRAINT `fk_ci_cart` FOREIGN KEY (`cart_id`) REFERENCES `cart`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_ci_product` FOREIGN KEY (`product_id`) REFERENCES `product`(`id`)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+  `qty` INT NOT NULL,
+  UNIQUE KEY uq_user_product (user_id, product_id),
+  CONSTRAINT fk_ci_user FOREIGN KEY (user_id) REFERENCES `user`(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_ci_product FOREIGN KEY (product_id) REFERENCES product(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 8) ORDINI
-CREATE TABLE IF NOT EXISTS `order` (
+CREATE TABLE `order` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `order_code` VARCHAR(30) NOT NULL,            -- es. OT-2025-000001
-  `buyer_id` INT NOT NULL,
-  `seller_id` INT NOT NULL,                     -- marketplace: ordine per venditore
-  `status` ENUM('pending','paid','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
-  `total` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `user_id` INT NOT NULL,
+  `status` ENUM('pending','paid','shipped','cancelled') NOT NULL DEFAULT 'pending',
+  `total_amount` DECIMAL(10,2) NOT NULL,
   `currency` CHAR(3) NOT NULL DEFAULT 'EUR',
-  `shipping_address_id` INT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_order_code` (`order_code`),
-  CONSTRAINT `fk_order_buyer` FOREIGN KEY (`buyer_id`) REFERENCES `user`(`id`)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_order_seller` FOREIGN KEY (`seller_id`) REFERENCES `user`(`id`)
-    ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_order_ship_addr` FOREIGN KEY (`shipping_address_id`) REFERENCES `user_address`(`id`)
-    ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES `user`(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `order_item` (
+CREATE TABLE order_item (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `order_id` INT NOT NULL,
   `product_id` INT NOT NULL,
   `qty` INT NOT NULL,
-  `unit_price` DECIMAL(10,2) NOT NULL,          -- prezzo fissato al checkout
-  CONSTRAINT `fk_oi_order` FOREIGN KEY (`order_id`) REFERENCES `order`(`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_oi_product` FOREIGN KEY (`product_id`) REFERENCES `product`(`id`)
-    ON DELETE RESTRICT ON UPDATE CASCADE
+  `unit_price` DECIMAL(10,2) NOT NULL,
+  CONSTRAINT fk_oi_order FOREIGN KEY (order_id) REFERENCES `order`(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_oi_product FOREIGN KEY (product_id) REFERENCES product(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-SET FOREIGN_KEY_CHECKS = 1;
--- ========================= FINE SCHEMA =========================
+-- =========================
+-- DATI DEMO
+-- =========================
+
+INSERT INTO `user` (name,email,password_hash,role) VALUES
+('Demo Customer','customer@example.com',  -- pwd: demo1234
+  '$2y$10$DnM8F9s.QyG0H3ag7p7F2O0bq2h2m8m3Qy6m1qR8jK2XwSXQyO1jS', 'customer'),
+('Admin','admin@example.com',             -- pwd: admin1234
+  '$2y$10$0YJdQyKZC3wR0qN1n7nC0uDk6n1y7i6G5Q2ZbJ7mnY3QkqGJpX2y2', 'admin');
+
+INSERT INTO category (name, slug) VALUES
+('Zaini','zaini'),
+('Tende','tende'),
+('Accessori','accessori');
+
+INSERT INTO product (category_id,title,slug,description,price,stock,is_active,image_filename) VALUES
+(1,'Zaino Trek 30L','zaino-trek-30l','Zaino leggero per trekking giornaliero.',69.90,25,1,NULL),
+(1,'Zaino Pro 45L','zaino-pro-45l','Zaino escursionismo con supporto lombare.',99.00,12,1,NULL),
+(2,'Tenda Ultra 2P','tenda-ultra-2p','Tenda due posti ultraleggera.',179.00,8,1,NULL),
+(3,'Lampada Frontale X','lampada-frontale-x','Frontale LED ricaricabile.',24.50,40,1,NULL);
+
+-- Nota immagini:
+-- Salva i PNG con nome {id}.png in uploads/products/.
+-- I quattro prodotti di cui sopra avranno immagini: 1.png, 2.png, 3.png, 4.png
+
+-- =========================
+-- FINE
+-- =========================

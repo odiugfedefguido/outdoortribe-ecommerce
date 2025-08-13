@@ -2,22 +2,23 @@
 /*
  * File: public/index.php
  * Scopo: Home e‑commerce con vetrina prodotti + ricerca.
- * Stato: IMPLEMENTATO (minimo funzionante).
+ * Compatibile con schema: category(id,name,slug), product(category_id, image_filename…)
  */
 session_start();
 require_once __DIR__ . '/../server/connection.php';
-require_once __DIR__ . '/../admin/functions.php';
 require_once __DIR__ . '/config_path.php';
+//require_once __DIR__ . '/auth_guard.php';     // obbliga login
+require_once __DIR__ . '/img_path.php';       // helper per immagini prodotto
 
 /* -------------------------- Config vetrina -------------------------- */
 $limit = 12;                       // numero prodotti in home
 $q = trim($_GET['q'] ?? '');       // ricerca veloce
-$cat = intval($_GET['cat'] ?? 0);  // (opzionale) filtro categoria
+$cat = (int)($_GET['cat'] ?? 0);   // filtro categoria
 
 /* -------------------------- Carico categorie ------------------------ */
 $cats = [];
-if ($res = $conn->query("SELECT id, name FROM category ORDER BY name")) {
-  while ($r = $res->fetch_assoc()) $cats[] = $r;
+if ($res = $conn->query("SELECT id, name FROM category WHERE is_active=1 ORDER BY name")) {
+  $cats = $res->fetch_all(MYSQLI_ASSOC);
 }
 
 /* -------------------------- Query prodotti -------------------------- */
@@ -30,22 +31,21 @@ if ($q !== '') {
   $params[] = $q; $params[] = $q; $types .= 'ss';
 }
 if ($cat > 0) {
-  $where .= " AND EXISTS (SELECT 1 FROM product_category pc WHERE pc.product_id=p.id AND pc.category_id=?)";
+  $where .= " AND p.category_id = ?";
   $params[] = $cat; $types .= 'i';
 }
 
 $sql = "
-  SELECT p.id, p.title, p.price, p.currency,
-         (SELECT url FROM product_image pi WHERE pi.product_id=p.id ORDER BY sort_order ASC, id ASC LIMIT 1) AS img
+  SELECT p.id, p.title, p.price, p.currency, p.image_filename
   FROM product p
   WHERE $where
-  ORDER BY p.created_at DESC
+  ORDER BY p.id DESC
   LIMIT ?
 ";
 $params[] = $limit; $types .= 'i';
 
 $stmt = $conn->prepare($sql);
-if ($types) $stmt->bind_param($types, ...$params);
+if ($types !== '') { $stmt->bind_param($types, ...$params); }
 $stmt->execute();
 $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
@@ -56,14 +56,14 @@ $stmt->close();
   <meta charset="utf-8" />
   <title>OutdoorTribe – E‑commerce</title>
 
-  <!-- CSS base del tuo progetto -->
+  <!-- CSS esistenti nel progetto -->
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 
   <style>
-    /* Stili minimi per la griglia (non invadenti rispetto ai tuoi CSS) */
     .home-hero { margin: 12px 0 16px }
+    .home-filter { display:flex; gap:8px; flex-wrap:wrap; margin: 12px 0 }
     .prod-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -71,17 +71,14 @@ $stmt->close();
     }
     .prod-card {
       display: block; text-decoration: none; color: inherit;
-      border: 1px solid #ddd; border-radius: 10px; padding: 12px;
-      background: #fff;
+      border: 1px solid #ddd; border-radius: 10px; padding: 12px; background: #fff;
     }
     .prod-card img {
-      width: 100%; height: 160px; object-fit: cover; border-radius: 8px;
-      background: #f7f7f7;
+      width: 100%; height: 160px; object-fit: cover; border-radius: 8px; background: #f7f7f7;
     }
     .prod-title { margin-top: 8px; font-weight: 700; min-height: 44px; }
     .prod-price { margin-top: 4px; font-weight: 600; }
     .home-actions { margin: 12px 0 20px }
-    .home-filter { display:flex; gap:8px; flex-wrap:wrap; margin: 12px 0 }
   </style>
 </head>
 <body>
@@ -92,13 +89,13 @@ $stmt->close();
   <h1>Benvenuto nel nuovo E‑commerce</h1>
   <p>Scopri gli ultimi arrivi e le categorie più cercate.</p>
 
-  <!-- Ricerca rapida + (opzionale) filtro categoria -->
+  <!-- Ricerca + filtro categoria -->
   <form method="get" class="home-filter">
     <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Cerca prodotto..." />
     <select name="cat">
       <option value="0">Tutte le categorie</option>
       <?php foreach ($cats as $c): ?>
-        <option value="<?= (int)$c['id'] ?>" <?= $cat==$c['id'] ? 'selected' : '' ?>>
+        <option value="<?= (int)$c['id'] ?>" <?= $cat===$c['id'] ? 'selected' : '' ?>>
           <?= htmlspecialchars($c['name']) ?>
         </option>
       <?php endforeach; ?>
@@ -120,11 +117,7 @@ $stmt->close();
     <div class="prod-grid">
       <?php foreach ($products as $p): ?>
         <a class="prod-card" href="<?= $BASE ?>/public/products/details.php?id=<?= (int)$p['id'] ?>">
-          <?php if (!empty($p['img'])): ?>
-            <img src="<?= htmlspecialchars($p['img']) ?>" alt="<?= htmlspecialchars($p['title']) ?>">
-          <?php else: ?>
-            <img src="<?= $BASE ?>/public/images/placeholder-product.png" alt="">
-          <?php endif; ?>
+          <img src="<?= htmlspecialchars(product_image_url($p)) ?>" alt="<?= htmlspecialchars($p['title']) ?>">
           <div class="prod-title"><?= htmlspecialchars($p['title']) ?></div>
           <div class="prod-price">
             <?= number_format((float)$p['price'], 2, ',', '.') . ' ' . htmlspecialchars($p['currency'] ?? 'EUR') ?>
