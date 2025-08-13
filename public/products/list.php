@@ -7,6 +7,8 @@
  */
 session_start();
 require_once __DIR__ . '/../../server/connection.php';
+// Include il file di configurazione del percorso per arrivare a config_path.php
+require_once __DIR__ . '/../config_path.php'; // Assicurati che questo file esista e contenga il percorso corretto
 
 $limit = 12;
 $page  = max(1, intval($_GET['page'] ?? 1));

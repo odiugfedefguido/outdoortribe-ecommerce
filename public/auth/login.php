@@ -13,6 +13,9 @@ session_start();
 include("./../server/connection.php");
 include("./../admin/functions.php");
 
+// Include il file di configurazione del percorso per arrivare a config_path.php
+require_once __DIR__ . '/../config_path.php';
+
 // Definisci una variabile per il messaggio di errore
 $error_message = '';
 
@@ -109,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
           <!-- Pulsante per il login -->
           <input class="full-btn" type="submit" id="loginBtn" value="Login">
           <!-- Pulsante per la registrazione -->
-          <button class="border-btn" id="signupBtn" onclick="window.location.href="/ecommerce_from_outdoortribe/signup.php";">Sign up</button>
+          <button class="border-btn" id="signupBtn" onclick="window.location.href='/ecommerce_from_outdoortribe/signup.php';">Sign up</button>
         </div>
       </div>
     </form>

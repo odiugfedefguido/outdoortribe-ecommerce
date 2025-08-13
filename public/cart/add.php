@@ -8,6 +8,8 @@
 session_start();
 require_once __DIR__ . '/../../server/connection.php';
 require_once __DIR__ . '/../../admin/functions.php'; // se hai checkLogin()
+// Include il file di configurazione del percorso per arrivare a config_path.php
+require_once __DIR__ . '/../config_path.php';
 
 // Verifica login utente (puoi adattare a come gestisci la sessione)
 if (!isset($_SESSION['user_id'])) {

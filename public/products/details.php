@@ -53,7 +53,11 @@ $res->close();
   <link rel="stylesheet" href="/ecommerce_from_outdoortribe/templates/footer/footer.css">
 </head>
 <body>
-<?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/header/header.html";
+ //include il file di configurazione del percorso per arrivare a config_path.php
+    require_once __DIR__ . '/../config_path.php'; ?>
+?>
+
 
 <h2><?= htmlspecialchars($prod['title']) ?></h2>
 <div style="display:flex;gap:24px;">

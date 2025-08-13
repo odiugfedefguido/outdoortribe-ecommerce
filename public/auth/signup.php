@@ -13,6 +13,9 @@ session_start();
 include("./../server/connection.php");
 include("./../admin/functions.php");
 
+// Include il file di configurazione del percorso per arrivare a config_path.php
+require_once __DIR__ . '/../config_path.php';
+
 // Definisci una variabile per il messaggio di errore
 $error_message = '';
 
@@ -117,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
       <!-- Messaggio e pulsante per il login -->
       <div class="buttons-container-2">
         <p class="paragraph-400">Already have an account?</p>
-        <button class="border-btn" id="loginBtn" onclick="window.location.href="/ecommerce_from_outdoortribe/login.php";">Login</button>
+        <button class="border-btn" id="loginBtn" onclick="window.location.href='/ecommerce_from_outdoortribe/login.php';">Login</button>
       </div>
     </div>
   </main>
