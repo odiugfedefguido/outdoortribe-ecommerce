@@ -1,16 +1,28 @@
-<?php if (!isset($BASE)) { include __DIR__ . '/../../public/config_path.php'; } ?>
+<?php
+if (!isset($BASE)) { include __DIR__ . '/../../public/config_path.php'; }
+if (session_status() === PHP_SESSION_NONE) session_start();
+?>
 <header>
   <div class="left-section">
-    <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="Logo - OutdoorTribe">
+    <a href="<?= $BASE ?>/public/">
+      <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe">
+    </a>
   </div>
 
   <div class="right-section">
     <img class="menu-icon" src="<?= $BASE ?>/assets/icons/optionsMenu.svg" alt="menu-icon">
     <nav class="menu">
-      <a href="<?= $BASE ?>/public/notifications.php">Notifications</a>
-      <a href="<?= $BASE ?>/public/find_friends.php">Find Friends</a>
-      <a href="<?= $BASE ?>/admin/logout.php">Log Out</a>
+      <a href="<?= $BASE ?>/public/">Home</a>
+      <a href="<?= $BASE ?>/public/products/list.php">Prodotti</a>
       <a href="<?= $BASE ?>/public/cart/view.php">Carrello</a>
+      <a href="<?= $BASE ?>/public/orders/my_orders.php">I miei ordini</a>
+
+      <?php if (empty($_SESSION['user_id'])): ?>
+        <a href="<?= $BASE ?>/public/auth/login.php">Log In</a>
+        <a href="<?= $BASE ?>/public/auth/signup.php">Registrati</a>
+      <?php else: ?>
+        <a href="<?= $BASE ?>/public/auth/logout.php">Log Out</a>
+      <?php endif; ?>
     </nav>
   </div>
 
