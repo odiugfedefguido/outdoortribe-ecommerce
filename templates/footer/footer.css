@@ -1,13 +1,22 @@
 /* templates/footer/footer.css */
-footer {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+/* Footer “sticky” che non copre mai contenuto */
+footer{
+  height: var(--footer-h);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   background: var(--brand);
-  color: #fff;
-  position: fixed; left: 0; right: 0; bottom: 0;
-  z-index: 5;
+  color:#fff;
+
+  /* niente fixed: il footer resta nel flusso del layout */
+  position: static;
+
+  /* spingi il footer in fondo se la pagina è corta (flex sul body) */
+  margin-top: auto;
+
+  z-index: 1;
 }
-footer nav { display:none; } /* niente duplicazioni del menu */
-footer p { margin: 0; font-size: 14px; opacity: .9; }
+
+footer nav{ display:none; } /* niente duplicazione del menu */
+footer p{ margin:0; font-size:14px; opacity:.9; }
