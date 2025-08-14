@@ -1,10 +1,12 @@
 <?php if (!isset($BASE)) { include __DIR__ . '/../../public/config_path.php'; } ?>
 <footer>
-  <nav>
-    <a href="<?= $BASE ?>/public/">Home</a>
-    <a href="<?= $BASE ?>/public/products/list.php">Prodotti</a>
-    <a href="<?= $BASE ?>/public/cart/view.php">Carrello</a>
-    <a href="<?= $BASE ?>/public/orders/my_orders.php">I miei ordini</a>
-  </nav>
-  <p>© <?= date('Y') ?> OutdoorTribe Ecommerce</p>
+  <div class="footer-inner">
+    <div class="legal">© <?= date('Y') ?> OutdoorTribe</div>
+    <!-- Link secondari (non duplicano l'header). Metti URL reali o lascia # -->
+    <nav class="links">
+      <a href="#">Privacy</a>
+      <a href="#">Termini</a>
+      <a href="#">Contatti</a>
+    </nav>
+  </div>
 </footer>

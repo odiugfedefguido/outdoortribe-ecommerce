@@ -1,14 +1,11 @@
-<?php
+<?php require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/img_path.php';
+
 /*
  * File: public/index.php
  * Scopo: Home e-commerce con vetrina prodotti + ricerca.
  * Compatibile con schema: category(id,name,slug), product(category_id, image_filename…)
  */
-session_start();
-require_once __DIR__ . '/../server/connection.php';
-require_once __DIR__ . '/config_path.php';
-// require_once __DIR__ . '/auth_guard.php';   // ← sblocca se vuoi l’accesso solo loggati
-require_once __DIR__ . '/img_path.php';       // helper per immagini prodotto
 
 /* -------------------------- Config vetrina -------------------------- */
 $limit = 12;                        // numero prodotti in home
@@ -27,9 +24,7 @@ $params = [];
 $types  = '';
 
 if ($q !== '') {
-  // WORKAROUND anti "Illegal mix of collations":
-  // - collate le colonne a utf8mb4_unicode_ci
-  // - converto e collate il placeholder a utf8mb4_unicode_ci
+  // Workaround collation per alcuni XAMPP/MySQL
   $where .= "
     AND (
       p.title       COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(? USING utf8mb4) COLLATE utf8mb4_unicode_ci, '%')
@@ -67,7 +62,6 @@ $stmt->close();
   <meta charset="utf-8" />
   <title>OutdoorTribe – E-commerce</title>
 
-  <!-- CSS esistenti nel progetto -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
