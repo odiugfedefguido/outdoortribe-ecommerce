@@ -1,5 +1,7 @@
 <?php
-if (!isset($BASE)) { include __DIR__ . '/../../public/config_path.php'; }
+// templates/header/header.html
+// Garantisce $BASE e sessione anche se la pagina non ha caricato il bootstrap.
+if (!isset($BASE) || $BASE === '') { include __DIR__ . '/../../public/config_path.php'; }
 if (session_status() === PHP_SESSION_NONE) session_start();
 ?>
 <header>
@@ -20,6 +22,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
       <a href="<?= $BASE ?>/public/cart/view.php">Carrello</a>
       <a href="<?= $BASE ?>/public/orders/my_orders.php">I miei ordini</a>
 
+      <?php if (!empty($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+        <!-- Link visibile SOLO agli admin (admin è sorella di public) -->
+        <a href="<?= $BASE ?>/admin/product_new.php">Admin: nuovo prodotto</a>
+        <!-- opzionale: <a href="<?= $BASE ?>/admin/">Admin: dashboard</a> -->
+      <?php endif; ?>
+
       <?php if (empty($_SESSION['user_id'])): ?>
         <a href="<?= $BASE ?>/public/auth/login.php">Log in</a>
         <a href="<?= $BASE ?>/public/auth/signup.php">Registrati</a>
@@ -30,5 +38,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
   </div>
 </header>
 
+<!-- JS: toggle menu mobile + tema -->
 <script src="<?= $BASE ?>/public/javascript/menu.js"></script>
 <script src="<?= $BASE ?>/public/javascript/theme.js"></script>

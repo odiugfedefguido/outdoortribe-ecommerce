@@ -1,6 +1,12 @@
 <?php
-require_once __DIR__ . '/../bootstrap.php';
-require_admin(); // ulteriore garanzia
+// admin/product_new.php  (admin è sorella di public)
+require_once __DIR__ . '/../public/bootstrap.php'; // sessione + $BASE + $conn
+require_admin(); // solo admin
+
+// Fallback: se per qualunque motivo $BASE non è settata, ricarico la config
+if (!isset($BASE) || $BASE === '') {
+  require_once __DIR__ . '/../public/config_path.php';
+}
 
 // Carico categorie
 $cats = [];
@@ -8,7 +14,7 @@ if ($res = $conn->query("SELECT id, name FROM category WHERE is_active=1 ORDER B
   $cats = $res->fetch_all(MYSQLI_ASSOC);
 }
 
-$msg = $err = '';
+$err = $msg = '';
 
 function slugify($s) {
   $s = iconv('UTF-8','ASCII//TRANSLIT',$s);
@@ -43,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if (!in_array($ext, $allowed, true)) {
         $err = 'Formato immagine non supportato (usa png/jpg/jpeg/webp).';
       } else {
-        $uploadsDir = dirname(__DIR__) . '/../uploads/products'; // root/uploads/products
+        $uploadsDir = __DIR__ . '/../uploads/products'; // admin -> uploads
         if (!is_dir($uploadsDir)) { @mkdir($uploadsDir, 0777, true); }
         $filename = $pid . '.' . $ext;
         $dest = $uploadsDir . '/' . $filename;
@@ -57,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$err) {
-      $msg = "Prodotto #$pid creato.";
       header("Location: {$BASE}/public/products/details.php?id={$pid}");
       exit;
     }
@@ -68,13 +73,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>Nuovo prodotto</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin · Nuovo prodotto</title>
+
+  <!-- Base URL per stabilizzare link/asset -->
+  <base href="<?= htmlspecialchars($BASE) ?>/">
+
+  <!-- Stessi CSS delle pagine public -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 </head>
 <body>
-<?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../templates/header/header.html"; ?>
+
 <section class="container">
   <h1>Aggiungi prodotto</h1>
   <?php if ($err): ?><div class="notice"><?= htmlspecialchars($err) ?></div><?php endif; ?>
@@ -115,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </form>
 </section>
-<?php include __DIR__ . "/../../templates/footer/footer.html"; ?>
+
+<?php include __DIR__ . "/../templates/footer/footer.html"; ?>
 </body>
 </html>

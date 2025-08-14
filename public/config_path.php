@@ -1,13 +1,18 @@
 <?php
-/* Calcola automaticamente il BASE URL (es. /ecommerce/outdoortribe-ecommerce) in base alla richiesta corrente */
+/* public/config_path.php
+ * Calcola il BASE di progetto (es. /outdoortribe-ecommerce) sia da /public/* che da /admin/*
+ */
 $script = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\','/', $_SERVER['SCRIPT_NAME']) : '';
-if ($script === '') {
-    $BASE = '';
-} else {
-    // Esempio: "/qualcosa/public/index.php" -> "/qualcosa"
-    $BASE = preg_replace('#/public(/.*)?$#', '', $script);
-    if ($BASE === null) {
-        $BASE = '';
+$BASE = '';
+
+if ($script !== '') {
+    // Cattura tutto ciò che sta prima di /public o /admin
+    if (preg_match('#^(.+?)/(public|admin)(/|$)#', $script, $m)) {
+        $BASE = $m[1];
+    } else {
+        // fallback: cartella dello script
+        $BASE = rtrim(dirname($script), '/');
+        if ($BASE === '/') $BASE = '';
     }
 }
 ?>
