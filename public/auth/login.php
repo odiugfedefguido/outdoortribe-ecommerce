@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . '/../bootstrap.php'; // consentito via allowlist
+// public/auth/login.php
+require_once __DIR__ . '/../bootstrap.php'; // (consentito in allowlist nel bootstrap)
+
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $_SESSION['user_name'] = $u['name'] ?? '';
       $_SESSION['user_role'] = $u['role'] ?? 'user';
 
-      $next = $_GET['next'] ?? $_POST['next'] ?? ($BASE . '/public/');
+      $next = $_POST['next'] ?? ($BASE . '/public/');
       header("Location: " . $next);
       exit;
     } else {
@@ -34,28 +36,58 @@ $next = $_GET['next'] ?? ($BASE . '/public/');
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>Login</title>
+  <title>Accedi • OutdoorTribe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Stili globali + stile auth “social” -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/auth.css">
 </head>
 <body>
+
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
-<section class="container">
-  <h1>Accedi</h1>
-  <?php if ($error): ?><div class="notice"><?= htmlspecialchars($error) ?></div><?php endif; ?>
-  <form method="post">
-    <input type="hidden" name="next" value="<?= htmlspecialchars($next) ?>">
-    <label>Email</label>
-    <input type="email" name="email" required>
-    <label>Password</label>
-    <input type="password" name="password" required>
-    <div class="actions" style="margin-top:10px;">
-      <button type="submit">Entra</button>
-      <a class="btn-secondary" href="<?= $BASE ?>/public/auth/signup.php">Registrati</a>
-    </div>
-  </form>
-</section>
+
+<main class="auth-landing">
+  <section class="auth-split">
+    <!-- Colonna brand (sinistra) -->
+    <aside class="brand-side">
+      <div class="brand-overlay">
+        <img class="brand-logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe">
+        <h1>OutdoorTribe</h1>
+        <p>Esplora. Condividi. Acquista attrezzatura per le tue avventure.</p>
+      </div>
+    </aside>
+
+    <!-- Colonna form (destra) -->
+    <section class="form-side">
+      <div class="auth-form-card">
+        <h2>Accedi</h2>
+        <?php if ($error): ?><div class="notice"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+
+        <form method="post" class="auth-form">
+          <input type="hidden" name="next" value="<?= htmlspecialchars($next) ?>">
+
+          <label>Email</label>
+          <input type="email" name="email" required autofocus placeholder="tu@esempio.it">
+
+          <label>Password</label>
+          <input type="password" name="password" required placeholder="••••••••">
+
+          <div class="auth-actions">
+            <button type="submit">Entra</button>
+            <a class="btn-secondary" href="<?= $BASE ?>/public/auth/signup.php">Crea un account</a>
+          </div>
+
+          <div class="auth-minor">
+            <a href="#" onclick="alert('Funzionalità non ancora disponibile'); return false;">Password dimenticata?</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </section>
+</main>
+
 <?php include __DIR__ . "/../../templates/footer/footer.html"; ?>
 </body>
 </html>

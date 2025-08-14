@@ -1,22 +1,40 @@
 /* public/styles/main.css */
 
-/* ====== Reset minimale + variabili (LIGHT di default) ====== */
+/* ====== Tema OutdoorTribe ====== */
 :root{
-  --bg: #fafafa;
+  --bg: #f6f7f6;
   --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --text: #1f2937;
+  --text: #1e293b;
   --muted: #6b7280;
-  --line: #e5e7eb;
-  --brand: #355B3E;      /* verde header */
-  --brand-600: #2a4b33;  /* hover più scuro */
-  --ok-bg: #e6ffed;
-  --ok-line: #b7f5c6;
-  --warn-bg: #fff7ed;
-  --warn-line: #fed7aa;
+  --line: #e6e7e6;
+
+  /* BRAND OutdoorTribe */
+  --brand: #355B3E;
+  --brand-600: #2B4A33;
+  --brand-700: #213A28;
+
+  --ok-bg: #e6ffed;  --ok-line: #b7f5c6;
+  --warn-bg: #fff7ed; --warn-line: #fed7aa;
   --danger: #dc2626;
-  --radius: 10px;
-  --shadow: 0 6px 18px rgba(0,0,0,.06);
+
+  --radius: 12px;
+  --shadow: 0 8px 28px rgba(0,0,0,.08);
+}
+
+[data-theme="dark"]{
+  --bg: #0f1712;
+  --surface: #121c16;
+  --text: #e6efe9;
+  --muted: #92a39a;
+  --line: #1e2b23;
+
+  --brand: #3f7a52;
+  --brand-600: #376b47;
+  --brand-700: #2c5639;
+
+  --ok-bg: #11351c;  --ok-line: #1c5a2b;
+  --warn-bg: #3b281c; --warn-line: #6b4a2f;
+  --danger: #ef4444;
 }
 
 * { box-sizing: border-box; }
@@ -26,9 +44,11 @@ body {
   font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
   color: var(--text);
   background: var(--bg);
+  padding-top: 60px;    /* offset header fixed */
+  padding-bottom: 64px; /* offset footer fixed */
 }
 
-/* ====== Layout util ====== */
+/* ====== Layout ====== */
 .container { width: min(1100px, 92%); margin: 0 auto; padding: 12px 0; }
 section { margin-bottom: 24px; }
 .right { text-align: right; }
@@ -40,7 +60,7 @@ p { margin: 8px 0; }
 small, .muted { color: var(--muted); }
 
 /* ====== Link & Bottoni ====== */
-a { color: var(--brand); text-decoration: none; }
+a { color: var(--brand-600); text-decoration: none; font-weight: 600; }
 a:hover { text-decoration: underline; }
 
 button, .btn {
@@ -48,32 +68,43 @@ button, .btn {
   border: 1px solid var(--brand);
   background: var(--brand);
   color: #fff;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 0 rgba(0,0,0,.06);
 }
 button:hover, .btn:hover { background: var(--brand-600); border-color: var(--brand-600); }
 button:disabled { opacity: .6; cursor: not-allowed; }
-
-.btn-secondary { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
+.btn-secondary {
+  background: transparent; color: var(--brand);
+  border: 1px solid var(--brand);
+}
 .btn-danger { background: var(--danger); border-color: var(--danger); }
 
 /* ====== Form ====== */
-input[type="text"], input[type="email"], input[type="number"],
-input[type="tel"], input[type="password"], select, textarea {
-  width: 100%; padding: 8px 10px; border: 1px solid var(--line);
-  border-radius: 8px; background: #fff; color: var(--text);
+input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"],
+select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
 }
 label { display: block; margin: 6px 0 4px; }
-.actions { display: flex; align-items: center; gap: 8px; }
+.actions { display: flex; align-items: center; gap: 10px; }
 .qty-input { width: 90px; }
 
 /* ====== Card / superfici ====== */
 .card {
-  display: block; background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 12px; color: inherit;
-  transition: box-shadow .15s ease, transform .05s ease;
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  color: inherit;
+  transition: box-shadow .18s ease, transform .06s ease;
 }
 .card:hover { box-shadow: var(--shadow); }
 
@@ -81,87 +112,72 @@ label { display: block; margin: 6px 0 4px; }
 .home-hero { margin: 12px 0 16px; }
 .home-filter { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 .home-filter input, .home-filter select, .home-filter button, .home-filter a {
-  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
 }
 .home-actions { margin: 12px 0 20px; }
 
 /* ====== Griglie prodotti ====== */
 .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 .prod-card {
-  text-decoration: none; border: 1px solid var(--line); border-radius: var(--radius);
-  background: var(--surface); padding: 12px; color: inherit; transition: box-shadow .15s ease;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 12px;
+  color: inherit;
+  transition: box-shadow .15s ease;
 }
 .prod-card:hover { box-shadow: var(--shadow); }
-.prod-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; background: #f7f7f7; }
-.prod-title { margin-top: 8px; font-weight: 700; min-height: 44px; }
-.prod-price { margin-top: 4px; font-weight: 700; }
+.prod-card img {
+  width: 100%; height: 160px; object-fit: cover;
+  border-radius: 10px; background: #f2f5f2;
+}
+.prod-title { margin-top: 8px; font-weight: 800; min-height: 44px; }
+.prod-price { margin-top: 4px; font-weight: 800; }
 
 /* ====== Pagina prodotto ====== */
 .product-page { display: grid; gap: 16px; grid-template-columns: 1fr; }
 @media (min-width: 900px) { .product-page { grid-template-columns: 1fr 1fr; } }
 .product-media img {
   width: 100%; height: auto; max-height: 520px; object-fit: contain;
-  background: #f7f7f7; border-radius: var(--radius);
+  background: #f2f5f2; border-radius: var(--radius);
 }
-.price { font-size: 1.25rem; font-weight: 700; margin: 8px 0; }
+.price { font-size: 1.25rem; font-weight: 800; margin: 8px 0; }
 .stock { color: var(--muted); margin-bottom: 8px; }
 
 /* ====== Tabelle (carrello / ordini) ====== */
-table {
-  width: 100%; border-collapse: collapse; background: var(--surface);
-  border-radius: var(--radius); overflow: hidden;
-}
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; }
 th, td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-thead th { background: var(--surface-2); text-align: left; }
-tfoot td { background: var(--surface-2); }
-.totale, .tot { text-align: right; font-weight: 700; }
+thead th { background: #f8fafc; text-align: left; }
+tfoot td { background: #f8fafc; }
+.totale, .tot { text-align: right; font-weight: 800; }
 
 /* ====== Messaggi ====== */
 .ok { background: var(--ok-bg); border: 1px solid var(--ok-line); padding: 10px 12px; border-radius: var(--radius); }
 .notice { background: var(--warn-bg); border: 1px solid var(--warn-line); padding: 10px 12px; border-radius: var(--radius); }
 
-/* ====== Badge & chip ====== */
-.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .85rem;
-  border: 1px solid var(--line); background: #fff; color: var(--muted); }
+/* ====== Badge ====== */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .85rem; border: 1px solid var(--line); background: #fff; color: var(--muted); }
 
-/* ====== Offset per header/footer fissi ====== */
-body { padding-top: 60px; padding-bottom: 60px; }
-@media (max-width: 600px){ body { padding-bottom: 64px; } }
-
-/* ====== DARK THEME ====== */
-/* 1) Automatico: usa il tema scuro se il sistema è in dark mode E non c'è preferenza salvata */
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme]) {
-    --bg: #0f1512;
-    --surface: #121a16;
-    --surface-2: #18221c;
-    --text: #e6efe9;
-    --muted: #9aaaa2;
-    --line: #223128;
-    /* brand resta verde; solo hover un filo più scuro */
-    --brand-600: #243e2d;
-  }
+/* ====== Auth (login/signup) ====== */
+.auth-page {
+  min-height: calc(100vh - 124px);
+  display: grid; place-items: center;
+  background: radial-gradient(1200px 600px at 10% -20%, #eaf3ed 0, transparent 60%),
+              radial-gradient(1200px 600px at 110% 120%, #eaf3ed 0, transparent 60%),
+              var(--bg);
 }
-
-/* 2) Manuale: se imposto data-theme="dark" sull'html, forza il dark a prescindere dal sistema */
-html[data-theme="dark"] {
-  --bg: #0f1512;
-  --surface: #121a16;
-  --surface-2: #18221c;
-  --text: #e6efe9;
-  --muted: #9aaaa2;
-  --line: #223128;
-  --brand-600: #243e2d;
+.auth-card {
+  width: min(420px, 92%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
 }
-
-/* 3) (opzionale) Forza il light esplicito se serve */
-html[data-theme="light"] {
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --text: #1f2937;
-  --muted: #6b7280;
-  --line: #e5e7eb;
-  --brand: #355B3E;
-  --brand-600: #2a4b33;
+.auth-brand {
+  display:flex; align-items:center; gap:10px; margin-bottom: 12px;
 }
+.auth-brand img{ height: 36px; }
+.auth-title { margin: 0 0 12px; font-weight: 900; }
+.auth-alt { display:flex; justify-content:space-between; align-items:center; margin-top: 10px; }

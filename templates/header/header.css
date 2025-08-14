@@ -1,65 +1,45 @@
 /* templates/header/header.css */
 header {
-  font-family: "Roboto", sans-serif;
+  font-family: system-ui, sans-serif;
   height: 60px;
   display: flex;
+  flex-direction: row;
+  background-color: var(--brand);
   align-items: center;
-  background-color: #355B3E; /* verde */
-  color: #fff;
-  margin: 0 auto;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 1000;
-  padding: 0 12px;
+  margin: auto;
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 10;
 }
 
-.left-section { flex: 1; display: flex; align-items: center; }
+.left-section { flex: 1; display: flex; align-items:center; }
 .right-section { display: flex; align-items: center; gap: 10px; }
 
-.logo { height: 45px; margin-left: 4px; }
+.logo { margin-left: 10px; height: 45px; }
 
-.menu-icon {
-  height: 48px;
-  display: none;
-  cursor: pointer;
-}
+.menu-icon { margin-right: 10px; height: 48px; display:none; }
 
 .menu {
   position: absolute;
-  top: 60px;
-  right: 0;
-  width: 180px;
-  background: #355B3E;
-  color: #fff;
-  padding: 10px 12px;
-  display: none;
-  flex-direction: column;
-  border-bottom-left-radius: 10px;
+  top: 65px; right: 0;
+  width: 220px;
+  background-color: var(--brand);
+  padding: 16px;
+  display:none; flex-direction: column; gap:12px;
 }
-
 .menu a {
   color: #ffffff;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 16px;
   text-decoration: none;
-  padding: 8px 10px;
-  border-radius: 6px;
 }
-.menu a:hover { background: rgba(255,255,255,0.1); }
 
-@media screen and (max-width: 768px) {
-  .menu-icon { display: block; }
+.btn-secondary { background: transparent; color: #fff; border-color: rgba(255,255,255,.8); }
+
+@media (min-width: 769px) {
+  .menu { position: static; background: transparent; width: auto; padding: 0; display: flex; flex-direction: row; gap: 8px; }
+}
+
+@media (max-width: 768px) {
+  .menu-icon { display: block; cursor: pointer; }
   .menu.active { display: flex; }
-}
-
-@media screen and (min-width: 769px) {
-  .menu {
-    position: static;
-    width: auto;
-    background: transparent;
-    padding: 0;
-    display: flex;
-    flex-direction: row;
-  }
-  .menu a { padding: 0 12px; }
 }
