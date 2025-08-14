@@ -1,11 +1,14 @@
 <?php
 // public/cart/add.php
-session_start();
-require_once __DIR__ . '/../config_path.php';
-//require_once __DIR__ . '/../auth_guard.php';
-require_once __DIR__ . '/../../server/connection.php';
+require_once __DIR__ . '/../bootstrap.php';  // login obbligatorio + $BASE + $conn
 
-$userId    = (int)($_SESSION['user_id'] ?? 0);
+// Consenti solo POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  header("Location: {$BASE}/public/products/list.php");
+  exit;
+}
+
+$userId    = current_user_id();
 $productId = (int)($_POST['product_id'] ?? 0);
 $qty       = max(1, (int)($_POST['qty'] ?? 0)); // evita 0 o negativi
 
@@ -14,7 +17,7 @@ if ($userId <= 0 || $productId <= 0) {
   exit;
 }
 
-// verifica prodotto e stock
+// Verifica prodotto e stock
 $stmt = $conn->prepare("SELECT id, stock, is_active FROM product WHERE id=?");
 $stmt->bind_param('i', $productId);
 $stmt->execute();
@@ -35,7 +38,7 @@ if ($qty > $stock) {
   $qty = $stock; // limita alla disponibilità
 }
 
-// upsert cart_item
+// Upsert su cart_item (richiede UNIQUE KEY su (user_id, product_id))
 $sql = "INSERT INTO cart_item (user_id, product_id, qty)
         VALUES (?,?,?)
         ON DUPLICATE KEY UPDATE qty = LEAST(qty + VALUES(qty), ?)";
@@ -44,6 +47,6 @@ $stmt->bind_param('iiii', $userId, $productId, $qty, $stock);
 $stmt->execute();
 $stmt->close();
 
-// redirect al carrello
+// Redirect al carrello
 header("Location: {$BASE}/public/cart/view.php");
 exit;

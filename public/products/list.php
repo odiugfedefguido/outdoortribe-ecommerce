@@ -1,9 +1,7 @@
 <?php
-session_start();
-require_once __DIR__ . '/../config_path.php';
-//require_once __DIR__ . '/../auth_guard.php'; // ← togli o commenta se vuoi lasciare accesso libero
-require_once __DIR__ . '/../../server/connection.php';
-require_once __DIR__ . '/../img_path.php';
+// public/products/list.php
+require_once __DIR__ . '/../bootstrap.php';   // login obbligatorio + $BASE + $conn
+require_once __DIR__ . '/../img_path.php';    // helper immagini
 
 // Lista prodotti attivi
 $sql = "SELECT p.id, p.title, p.price, p.currency, p.stock, p.image_filename
@@ -36,7 +34,9 @@ $prods = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
       background: #fff;
       padding: 10px;
       color: inherit;
+      transition: box-shadow .15s ease;
     }
+    .card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.06); }
     .card img {
       width: 100%;
       height: 160px;

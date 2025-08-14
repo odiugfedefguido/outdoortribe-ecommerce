@@ -1,22 +1,28 @@
 <?php
-session_start();
-require_once __DIR__ . '/../config_path.php';
-//require_once __DIR__ . '/../auth_guard.php';              // ← riattiva se vuoi l’accesso solo loggati
-require_once __DIR__ . '/../../server/connection.php';
-require_once __DIR__ . '/../img_path.php';
+// public/products/details.php
+require_once __DIR__ . '/../bootstrap.php';   // login obbligatorio + $BASE + $conn
+require_once __DIR__ . '/../img_path.php';    // helper immagini
 
 $id = (int)($_GET['id'] ?? 0);
-if ($id <= 0) { http_response_code(404); exit('Prodotto non trovato'); }
+if ($id <= 0) {
+  header("Location: {$BASE}/public/products/list.php?err=notfound");
+  exit;
+}
 
 $stmt = $conn->prepare(
   "SELECT id, title, description, price, currency, stock, image_filename, is_active
-   FROM product WHERE id=? AND is_active=1"
+   FROM product
+   WHERE id=? AND is_active=1"
 );
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $prod = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-if (!$prod) { http_response_code(404); exit('Prodotto non trovato'); }
+
+if (!$prod) {
+  header("Location: {$BASE}/public/products/list.php?err=notfound");
+  exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="it">

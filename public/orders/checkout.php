@@ -1,10 +1,8 @@
 <?php
 // public/orders/checkout.php
-session_start();
-require_once __DIR__ . '/../auth_guard.php';
-require_once __DIR__ . '/../../server/connection.php';
+require_once __DIR__ . '/../bootstrap.php'; // sessione + $BASE + $conn
 
-$userId = (int)($_SESSION['user_id'] ?? 0);
+$userId = current_user_id();
 
 // Carrello
 $sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock
@@ -19,7 +17,7 @@ $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 if (!$items) {
-  header("Location: /public/cart/view.php?err=empty");
+  header("Location: {$BASE}/public/cart/view.php?err=empty");
   exit;
 }
 
@@ -46,7 +44,9 @@ $csrf = $_SESSION['csrf_token'];
 <head>
   <meta charset="utf-8">
   <title>Checkout</title>
-  <link rel="stylesheet" href="/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
   <style>
     .grid {display:grid; gap:16px; grid-template-columns: 1fr; }
     @media(min-width:920px){ .grid{ grid-template-columns: 2fr 1fr; } }
@@ -69,7 +69,7 @@ $csrf = $_SESSION['csrf_token'];
   <div class="grid">
     <div class="card">
       <h2>Indirizzo di spedizione</h2>
-      <form method="post" action="/public/orders/place_order.php" id="checkoutForm">
+      <form method="post" action="<?= $BASE ?>/public/orders/place_order.php" id="checkoutForm">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
 
         <div class="row">
@@ -136,7 +136,7 @@ $csrf = $_SESSION['csrf_token'];
         </div>
 
         <div class="actions">
-          <a href="/public/cart/view.php">Torna al carrello</a>
+          <a class="btn-secondary" href="<?= $BASE ?>/public/cart/view.php">Torna al carrello</a>
           <button type="submit">Conferma ordine</button>
         </div>
       </form>

@@ -1,15 +1,20 @@
 <?php
 // public/orders/place_order.php
-session_start();
-require_once __DIR__ . '/../auth_guard.php';
-require_once __DIR__ . '/../../server/connection.php';
+require_once __DIR__ . '/../bootstrap.php'; // sessione + $BASE + $conn
 
-$userId = (int)($_SESSION['user_id'] ?? 0);
+// Consenti solo POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  header("Location: {$BASE}/public/cart/view.php");
+  exit;
+}
+
+$userId = current_user_id();
 
 // CSRF
 $csrf = $_POST['csrf_token'] ?? '';
 if (empty($csrf) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $csrf)) {
-  header("Location: /public/cart/view.php?err=csrf"); exit;
+  header("Location: {$BASE}/public/cart/view.php?err=csrf");
+  exit;
 }
 // usa one-time token
 unset($_SESSION['csrf_token']);
@@ -27,8 +32,10 @@ $notes          = substr($F('notes'), 0, 500);
 $payment_method = ($_POST['payment_method'] ?? 'cod') === 'card' ? 'card' : 'cod';
 
 // Validazioni minime
-if ($customer_name==='' || $customer_email==='' || $customer_phone==='' || $ship_address==='' || $ship_city==='' || $ship_zip==='' || $ship_country==='') {
-  header("Location: /public/orders/checkout.php?err=val"); exit;
+if ($customer_name==='' || $customer_email==='' || $customer_phone==='' ||
+    $ship_address==='' || $ship_city==='' || $ship_zip==='' || $ship_country==='') {
+  header("Location: {$BASE}/public/orders/checkout.php?err=val");
+  exit;
 }
 
 // Carrello (blocco per consistenza)
@@ -37,6 +44,7 @@ $sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock, p.i
         JOIN product p ON p.id = ci.product_id
         WHERE ci.user_id = ?
         FOR UPDATE";
+
 $conn->begin_transaction();
 
 try {
@@ -48,7 +56,8 @@ try {
 
   if (!$items) {
     $conn->rollback();
-    header("Location: /public/cart/view.php?err=empty"); exit;
+    header("Location: {$BASE}/public/cart/view.php?err=empty");
+    exit;
   }
 
   // Normalizza qty e filtra
@@ -77,7 +86,8 @@ try {
     $stmt->bind_param('i', $userId);
     $stmt->execute(); $stmt->close();
     $conn->commit();
-    header("Location: /public/cart/view.php?err=nostock"); exit;
+    header("Location: {$BASE}/public/cart/view.php?err=nostock");
+    exit;
   }
 
   // Calcoli economici (coerenti con checkout)
@@ -90,13 +100,13 @@ try {
 
   // (Simulazione pagamento carta)
   if ($payment_method === 'card') {
-    // Qui potresti integrare un gateway; per ora simuliamo OK
     $card_number = preg_replace('/\s+/', '', (string)($_POST['card_number'] ?? ''));
     $card_exp    = (string)($_POST['card_exp'] ?? '');
     $card_cvv    = (string)($_POST['card_cvv'] ?? '');
     if (strlen($card_number) < 12 || strlen($card_exp) < 4 || strlen($card_cvv) < 3) {
       $conn->rollback();
-      header("Location: /public/orders/checkout.php?err=card"); exit;
+      header("Location: {$BASE}/public/orders/checkout.php?err=card");
+      exit;
     }
   }
 
@@ -107,8 +117,9 @@ try {
       customer_name, customer_email, customer_phone, ship_address, ship_city, ship_zip, ship_country, notes, payment_method)
      VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   );
+  // tipi: i, d, s, d, d, d, d, s x 9
   $stmt->bind_param(
-    'idssdddssssssssss',
+    'idsddddsssssssss',
     $userId, $subtotal, $currency, $shippingCost, $vatRate, $vatAmount, $grandTotal,
     $customer_name, $customer_email, $customer_phone, $ship_address, $ship_city, $ship_zip, $ship_country, $notes, $payment_method
   );
@@ -117,12 +128,12 @@ try {
   $stmt->close();
 
   // Righe + scalatura stock
-  $stmtItem = $conn->prepare("INSERT INTO order_item (order_id, product_id, qty, unit_price) VALUES (?, ?, ?, ?)");
+  $stmtItem  = $conn->prepare("INSERT INTO order_item (order_id, product_id, qty, unit_price) VALUES (?, ?, ?, ?)");
   $stmtStock = $conn->prepare("UPDATE product SET stock = stock - ? WHERE id = ? AND stock >= ?");
 
   foreach ($normalized as $n) {
-    $pid = $n['product_id'];
-    $qty = $n['qty'];
+    $pid   = $n['product_id'];
+    $qty   = $n['qty'];
     $price = $n['price'];
 
     $stmtItem->bind_param('iiid', $orderId, $pid, $qty, $price);
@@ -151,10 +162,11 @@ try {
 
   $conn->commit();
 
-  header("Location: /public/orders/thank_you.php?order_id=" . $orderId);
+  header("Location: {$BASE}/public/orders/thank_you.php?order_id=" . $orderId);
   exit;
 
 } catch (Throwable $e) {
   $conn->rollback();
-  header("Location: /public/cart/view.php?err=checkout"); exit;
+  header("Location: {$BASE}/public/cart/view.php?err=checkout");
+  exit;
 }

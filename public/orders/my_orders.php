@@ -1,13 +1,14 @@
 <?php
 // public/orders/my_orders.php
-session_start();
-//require_once __DIR__ . '/../auth_guard.php';
-require_once __DIR__ . '/../../server/connection.php';
+require_once __DIR__ . '/../bootstrap.php'; // sessione + $BASE + $conn
 
-$userId = (int)($_SESSION['user_id'] ?? 0);
+$userId = current_user_id();
 
-// Ordini utente
-$stmt = $conn->prepare("SELECT id, status, total_amount, currency, created_at FROM `order` WHERE user_id=? ORDER BY id DESC");
+// Ordini dell'utente
+$stmt = $conn->prepare("SELECT id, status, total_amount, currency, created_at
+                        FROM `order`
+                        WHERE user_id=?
+                        ORDER BY id DESC");
 $stmt->bind_param('i', $userId);
 $stmt->execute();
 $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -16,7 +17,7 @@ $stmt->close();
 // Items per ordine (mappa order_id => items)
 $orderItems = [];
 if ($orders) {
-  $ids = array_map(fn($o)=> (int)$o['id'], $orders);
+  $ids = array_map(fn($o) => (int)$o['id'], $orders);
   $placeholders = implode(',', array_fill(0, count($ids), '?'));
   $types = str_repeat('i', count($ids));
 
@@ -42,7 +43,9 @@ $lastOrderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
 <head>
   <meta charset="utf-8">
   <title>I miei ordini</title>
-  <link rel="stylesheet" href="/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
   <style>
     .order{border:1px solid #ddd;border-radius:10px;margin:12px 0;padding:12px;background:#fff}
     .order h2{margin:0 0 8px 0}
@@ -59,15 +62,19 @@ $lastOrderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
   <h1>I miei ordini</h1>
 
   <?php if ($lastOrderId): ?>
-    <div class="ok">Ordine #<?= $lastOrderId ?> creato correttamente.</div>
+    <div class="ok">Ordine #<?= (int)$lastOrderId ?> creato correttamente.</div>
   <?php endif; ?>
 
   <?php if (!$orders): ?>
-    <p>Non hai ancora effettuato ordini. <a href="/public/products/list.php">Vai al catalogo</a></p>
+    <p>Non hai ancora effettuato ordini. <a href="<?= $BASE ?>/public/products/list.php">Vai al catalogo</a></p>
   <?php else: ?>
     <?php foreach ($orders as $o): ?>
       <article class="order">
-        <h2>Ordine #<?= (int)$o['id'] ?> · Stato: <?= htmlspecialchars($o['status']) ?> · del <?= htmlspecialchars($o['created_at']) ?></h2>
+        <h2>
+          Ordine #<?= (int)$o['id'] ?>
+          · Stato: <?= htmlspecialchars($o['status']) ?>
+          · del <?= htmlspecialchars($o['created_at']) ?>
+        </h2>
         <table>
           <thead>
             <tr>

@@ -1,12 +1,10 @@
 <?php
-session_start();
-//require_once __DIR__ . '/../auth_guard.php';
-require_once __DIR__ . '/../../server/connection.php';
-require_once __DIR__ . '/../config_path.php';
+// public/cart/view.php
+require_once __DIR__ . '/../bootstrap.php';  // login obbligatorio + $BASE + $conn
 
-$userId = (int)($_SESSION['user_id'] ?? 0);
+$userId = current_user_id();
 
-// carrello con join prodotti (prezzo corrente a vista; al checkout fisserai il prezzo)
+// Carrello con join prodotti (prezzo corrente a vista; al checkout fisserai il prezzo)
 $sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock
         FROM cart_item ci
         JOIN product p ON p.id = ci.product_id
@@ -73,7 +71,7 @@ foreach ($items as $it) {
           </td>
           <td class="right"><?= (int)$it['stock'] ?></td>
           <td>
-            <!-- Form aggiornamento quantità (no annidamento) -->
+            <!-- Form aggiornamento quantità -->
             <form method="post" action="<?= $BASE ?>/public/cart/update.php" class="actions">
               <input type="hidden" name="product_id" value="<?= (int)$it['product_id'] ?>">
               <input class="qty-input" type="number" name="qty"
@@ -106,12 +104,12 @@ foreach ($items as $it) {
       </tfoot>
     </table>
 
-    <!-- Form dedicato per procedere al checkout -->
-    <p class="right" style="margin-top:1rem;">
+    <!-- Pulsante per procedere al checkout -->
+    <div class="right" style="margin-top:1rem;">
       <form method="post" action="<?= $BASE ?>/public/orders/checkout.php" style="display:inline;">
         <button type="submit">Procedi al checkout</button>
       </form>
-    </p>
+    </div>
   <?php endif; ?>
 </section>
 
