@@ -2,15 +2,22 @@
 require_once __DIR__ . '/../bootstrap.php'; // consentito via allowlist nel bootstrap
 if (current_user_id() > 0) { header("Location: {$BASE}/public/"); exit; }
 
-// Carica il codice segreto admin (file NON pubblico)
+// Codice segreto per admin (file non pubblico)
 require_once __DIR__ . '/../../server/app_config.php';
 
 $error = '';
-// Valori sticky per ripopolare la form in caso di errore
+
+// Sticky values (per ripopolare la form in caso di errore)
 $name  = trim($_POST['name']  ?? '');
 $email = trim($_POST['email'] ?? '');
 $role_request = $_POST['role'] ?? 'user'; // 'user' | 'admin'
 $admin_code_input = $_POST['admin_code'] ?? '';
+
+$phone        = trim($_POST['phone'] ?? '');
+$ship_address = trim($_POST['ship_address'] ?? '');
+$ship_city    = trim($_POST['ship_city'] ?? '');
+$ship_zip     = trim($_POST['ship_zip'] ?? '');
+$ship_country = trim($_POST['ship_country'] ?? 'Italia');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $password  = (string)($_POST['password']  ?? '');
@@ -24,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif ($password !== $password2) {
     $error = 'Le password non coincidono.';
   } else {
-    // Se richiesta admin, valida il codice
+    // ruolo
     $role = 'user';
     if ($role_request === 'admin') {
       if (!isset($ADMIN_SIGNUP_CODE) || $ADMIN_SIGNUP_CODE === '') {
@@ -36,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     }
 
-    // Se non ci sono errori, procedi
     if ($error === '') {
       // email unica?
       $stmt = $conn->prepare("SELECT id FROM `user` WHERE email=? LIMIT 1");
@@ -49,8 +55,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Email già registrata.';
       } else {
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("INSERT INTO `user` (name,email,password_hash,role) VALUES (?,?,?,?)");
-        $stmt->bind_param('ssss', $name, $email, $hash, $role);
+
+        $stmt = $conn->prepare("
+          INSERT INTO `user`
+          (name,email,password_hash,role,phone,ship_address,ship_city,ship_zip,ship_country)
+          VALUES (?,?,?,?,?,?,?,?,?)
+        ");
+        $stmt->bind_param(
+          'sssssssss',
+          $name, $email, $hash, $role, $phone, $ship_address, $ship_city, $ship_zip, $ship_country
+        );
         $stmt->execute();
         $uid = (int)$stmt->insert_id;
         $stmt->close();
@@ -78,6 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <style>
     .role-box { display:flex; gap:12px; align-items:center; margin:8px 0; }
     .admin-code { display:none; margin-top:8px; }
+    .grid { display:grid; gap:10px; grid-template-columns: 1fr; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body>
@@ -87,17 +103,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php if ($error): ?><div class="notice"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
   <form method="post">
-    <label>Nome e cognome</label>
-    <input name="name" required maxlength="120" value="<?= htmlspecialchars($name) ?>">
+    <div class="grid">
+      <div>
+        <label>Nome e cognome</label>
+        <input name="name" required maxlength="120" value="<?= htmlspecialchars($name) ?>">
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" name="email" required maxlength="190" value="<?= htmlspecialchars($email) ?>">
+      </div>
+      <div>
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+      <div>
+        <label>Conferma password</label>
+        <input type="password" name="password2" required>
+      </div>
 
-    <label>Email</label>
-    <input type="email" name="email" required maxlength="190" value="<?= htmlspecialchars($email) ?>">
-
-    <label>Password</label>
-    <input type="password" name="password" required>
-
-    <label>Conferma password</label>
-    <input type="password" name="password2" required>
+      <div>
+        <label>Telefono (per consegna)</label>
+        <input name="phone" maxlength="40" value="<?= htmlspecialchars($phone) ?>">
+      </div>
+      <div>
+        <label>CAP</label>
+        <input name="ship_zip" maxlength="20" value="<?= htmlspecialchars($ship_zip) ?>">
+      </div>
+      <div>
+        <label>Indirizzo</label>
+        <input name="ship_address" maxlength="200" value="<?= htmlspecialchars($ship_address) ?>">
+      </div>
+      <div>
+        <label>Città</label>
+        <input name="ship_city" maxlength="120" value="<?= htmlspecialchars($ship_city) ?>">
+      </div>
+      <div>
+        <label>Nazione</label>
+        <input name="ship_country" maxlength="120" value="<?= htmlspecialchars($ship_country ?: 'Italia') ?>">
+      </div>
+    </div>
 
     <div class="role-box">
       <label style="margin:0;">Ruolo:</label>

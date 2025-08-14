@@ -21,22 +21,32 @@ if (!$items) {
   exit;
 }
 
-$subtotal = 0.0;
-foreach ($items as $it) {
-  $subtotal += (float)$it['price'] * (int)$it['qty'];
-}
-$currency = $items[0]['currency'] ?? 'EUR';
+// Dati profilo utente per prefill
+$stmt = $conn->prepare("SELECT name, email, phone, ship_address, ship_city, ship_zip, ship_country
+                        FROM `user` WHERE id=?");
+$stmt->bind_param('i', $userId);
+$stmt->execute();
+$u = $stmt->get_result()->fetch_assoc() ?: [];
+$stmt->close();
 
-// Regole costi (puoi modificarle)
+$pref_name   = $u['name']         ?? '';
+$pref_email  = $u['email']        ?? '';
+$pref_phone  = $u['phone']        ?? '';
+$pref_addr   = $u['ship_address'] ?? '';
+$pref_city   = $u['ship_city']    ?? '';
+$pref_zip    = $u['ship_zip']     ?? '';
+$pref_country= $u['ship_country'] ?? 'Italia';
+
+$subtotal = 0.0;
+foreach ($items as $it) { $subtotal += (float)$it['price'] * (int)$it['qty']; }
+$currency     = $items[0]['currency'] ?? 'EUR';
 $shippingCost = ($subtotal >= 99.00) ? 0.00 : 6.90;  // soglia spedizione gratuita
-$vatRate = 22.00;
+$vatRate   = 22.00;
 $vatAmount = round($subtotal * ($vatRate/100), 2);   // indicativo
-$grandTotal = $subtotal + $shippingCost;
+$grandTotal= $subtotal + $shippingCost;
 
 // CSRF token
-if (empty($_SESSION['csrf_token'])) {
-  $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
-}
+if (empty($_SESSION['csrf_token'])) { $_SESSION['csrf_token'] = bin2hex(random_bytes(16)); }
 $csrf = $_SESSION['csrf_token'];
 ?>
 <!DOCTYPE html>
@@ -75,36 +85,36 @@ $csrf = $_SESSION['csrf_token'];
         <div class="row">
           <div>
             <label>Nome e cognome</label>
-            <input name="customer_name" required maxlength="120">
+            <input name="customer_name" required maxlength="120" value="<?= htmlspecialchars($pref_name) ?>">
           </div>
           <div>
             <label>Telefono</label>
-            <input name="customer_phone" required maxlength="40">
+            <input name="customer_phone" required maxlength="40" value="<?= htmlspecialchars($pref_phone) ?>">
           </div>
         </div>
 
         <div class="row">
           <div>
             <label>Email</label>
-            <input type="email" name="customer_email" required maxlength="190">
+            <input type="email" name="customer_email" required maxlength="190" value="<?= htmlspecialchars($pref_email) ?>">
           </div>
           <div>
             <label>CAP</label>
-            <input name="ship_zip" required maxlength="20">
+            <input name="ship_zip" required maxlength="20" value="<?= htmlspecialchars($pref_zip) ?>">
           </div>
         </div>
 
         <label>Indirizzo</label>
-        <input name="ship_address" required maxlength="200">
+        <input name="ship_address" required maxlength="200" value="<?= htmlspecialchars($pref_addr) ?>">
 
         <div class="row">
           <div>
             <label>Città</label>
-            <input name="ship_city" required maxlength="120">
+            <input name="ship_city" required maxlength="120" value="<?= htmlspecialchars($pref_city) ?>">
           </div>
           <div>
             <label>Nazione</label>
-            <input name="ship_country" value="Italia" required maxlength="120">
+            <input name="ship_country" required maxlength="120" value="<?= htmlspecialchars($pref_country) ?>">
           </div>
         </div>
 
