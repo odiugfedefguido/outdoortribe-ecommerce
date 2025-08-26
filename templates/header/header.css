@@ -43,3 +43,8 @@ header {
   .menu-icon { display: block; cursor: pointer; }
   .menu.active { display: flex; }
 }
+.notif-bell { position: relative; display:inline-block; margin-right:.5rem; }
+.notif-bell .badge {
+  position:absolute; top:-6px; right:-10px; min-width:18px; height:18px; padding:0 4px;
+  border-radius:9px; font-size:12px; line-height:18px; text-align:center; background:#e11; color:#fff;
+}

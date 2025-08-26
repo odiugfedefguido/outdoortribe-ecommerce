@@ -164,3 +164,6 @@ tfoot td{ background:#f8fafc; }
 .auth-brand img{ height:36px; }
 .auth-title{ margin:0 0 12px; font-weight:900; }
 .auth-alt{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+
+.btn-primary{display:inline-block;padding:10px 14px;border-radius:10px;background:#1b5e20;color:#fff;text-decoration:none;font-weight:700}
+.btn-primary:hover{filter:brightness(0.95)}

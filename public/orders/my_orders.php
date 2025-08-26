@@ -4,8 +4,8 @@ require_once __DIR__ . '/../bootstrap.php'; // sessione + $BASE + $conn
 
 $userId = current_user_id();
 
-// Ordini dell'utente
-$stmt = $conn->prepare("SELECT id, status, total_amount, currency, created_at
+// Ordini dell'utente (senza total_amount/currency: li calcoliamo dagli items)
+$stmt = $conn->prepare("SELECT id, status, created_at
                         FROM `order`
                         WHERE user_id=?
                         ORDER BY id DESC");
@@ -14,14 +14,17 @@ $stmt->execute();
 $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// Items per ordine (mappa order_id => items)
-$orderItems = [];
+// Items per ordine (mappa order_id => items) + totali e currency calcolati
+$orderItems   = [];
+$orderTotals  = []; // order_id => somma(qty * unit_price)
+$orderCurrency= []; // order_id => currency (dalla prima riga prodotto)
+
 if ($orders) {
   $ids = array_map(fn($o) => (int)$o['id'], $orders);
   $placeholders = implode(',', array_fill(0, count($ids), '?'));
   $types = str_repeat('i', count($ids));
 
-  $sql = "SELECT oi.order_id, oi.product_id, oi.qty, oi.unit_price, p.title
+  $sql = "SELECT oi.order_id, oi.product_id, oi.qty, oi.unit_price, p.title, p.currency
           FROM order_item oi
           JOIN product p ON p.id = oi.product_id
           WHERE oi.order_id IN ($placeholders)
@@ -30,8 +33,20 @@ if ($orders) {
   $stmt->bind_param($types, ...$ids);
   $stmt->execute();
   $res = $stmt->get_result();
+
   while ($r = $res->fetch_assoc()) {
-    $orderItems[(int)$r['order_id']][] = $r;
+    $oid = (int)$r['order_id'];
+    $orderItems[$oid][] = $r;
+
+    // calcolo totale ordine
+    $line = (float)$r['unit_price'] * (int)$r['qty'];
+    if (!isset($orderTotals[$oid])) $orderTotals[$oid] = 0.0;
+    $orderTotals[$oid] += $line;
+
+    // prendo la currency dalla prima riga utile
+    if (!isset($orderCurrency[$oid]) || $orderCurrency[$oid] === '') {
+      $orderCurrency[$oid] = $r['currency'] ?: 'EUR';
+    }
   }
   $stmt->close();
 }
@@ -69,9 +84,15 @@ $lastOrderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
     <p>Non hai ancora effettuato ordini. <a href="<?= $BASE ?>/public/products/list.php">Vai al catalogo</a></p>
   <?php else: ?>
     <?php foreach ($orders as $o): ?>
+      <?php
+        $oid = (int)$o['id'];
+        $rows = $orderItems[$oid] ?? [];
+        $cur  = $orderCurrency[$oid] ?? 'EUR';
+        $tot  = $orderTotals[$oid] ?? 0.0;
+      ?>
       <article class="order">
         <h2>
-          Ordine #<?= (int)$o['id'] ?>
+          Ordine #<?= $oid ?>
           · Stato: <?= htmlspecialchars($o['status']) ?>
           · del <?= htmlspecialchars($o['created_at']) ?>
         </h2>
@@ -85,23 +106,20 @@ $lastOrderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
             </tr>
           </thead>
           <tbody>
-            <?php 
-              $rows = $orderItems[(int)$o['id']] ?? [];
-              foreach ($rows as $r):
-                $line = (float)$r['unit_price'] * (int)$r['qty'];
-            ?>
+            <?php foreach ($rows as $r): ?>
+              <?php $line = (float)$r['unit_price'] * (int)$r['qty']; ?>
               <tr>
                 <td><?= htmlspecialchars($r['title']) ?></td>
-                <td><?= number_format((float)$r['unit_price'], 2, ',', '.') ?> <?= htmlspecialchars($o['currency']) ?></td>
+                <td><?= number_format((float)$r['unit_price'], 2, ',', '.') ?> <?= htmlspecialchars($cur) ?></td>
                 <td><?= (int)$r['qty'] ?></td>
-                <td><?= number_format($line, 2, ',', '.') ?> <?= htmlspecialchars($o['currency']) ?></td>
+                <td><?= number_format($line, 2, ',', '.') ?> <?= htmlspecialchars($cur) ?></td>
               </tr>
             <?php endforeach; ?>
           </tbody>
           <tfoot>
             <tr>
               <td colspan="3" class="tot">Totale ordine</td>
-              <td class="tot"><?= number_format((float)$o['total_amount'], 2, ',', '.') ?> <?= htmlspecialchars($o['currency']) ?></td>
+              <td class="tot"><?= number_format($tot, 2, ',', '.') ?> <?= htmlspecialchars($cur) ?></td>
             </tr>
           </tfoot>
         </table>

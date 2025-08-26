@@ -162,6 +162,15 @@ try {
 
   $conn->commit();
 
+  // Notifica venditori per prodotti esauriti
+  require_once __DIR__ . '/../../server/notify.php';
+  notify_sold_out_for_order($conn, $orderId);
+
+
+  // Notifica venditori per eventuali prodotti esauriti
+  require_once __DIR__ . '/../../server/notify.php';
+  notify_sold_out_for_order($conn, $orderId);
+
   header("Location: {$BASE}/public/orders/thank_you.php?order_id=" . $orderId);
   exit;
 

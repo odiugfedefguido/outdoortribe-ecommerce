@@ -2,6 +2,20 @@
 if (!isset($BASE) || $BASE === '') { include __DIR__ . '/../../public/config_path.php'; }
 if (session_status() === PHP_SESSION_NONE) session_start();
 ?>
+<?php
+      // Notifiche non lette per l'utente corrente
+      $notif_count = 0;
+      if (!empty($_SESSION['user_id'])) {
+        require_once __DIR__ . '/../../server/connection.php';
+        $uid = (int)$_SESSION['user_id'];
+        $stmtN = $conn->prepare("SELECT COUNT(*) AS c FROM notification WHERE user_id=? AND is_read=0");
+        $stmtN->bind_param('i', $uid);
+        $stmtN->execute();
+        $rowN = $stmtN->get_result()->fetch_assoc();
+        $stmtN->close();
+        $notif_count = (int)($rowN['c'] ?? 0);
+      }
+?>
 <header>
   <div class="left-section">
     <a href="<?= $BASE ?>/public/">
@@ -14,15 +28,21 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
     <img class="menu-icon" src="<?= $BASE ?>/assets/icons/optionsMenu.svg" alt="menu">
     <nav class="menu">
+      <a href="<?= $BASE ?>/public/notifications/" class="notif-bell">🔔<?php if($notif_count>0): ?><span class="badge"><?= $notif_count ?></span><?php endif; ?></a>
       <a href="<?= $BASE ?>/public/">Home</a>
       <a href="<?= $BASE ?>/public/products/list.php">Prodotti</a>
       <a href="<?= $BASE ?>/public/cart/view.php">Carrello</a>
       <a href="<?= $BASE ?>/public/orders/my_orders.php">I miei ordini</a>
+      <a href="<?= $BASE ?>/public/notifications/" class="notif-bell">
+    🔔<?php if($notif_count>0): ?><span class="badge"><?= $notif_count ?></span><?php endif; ?>
+        </a>
+
 
       <?php if (!empty($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
         <a href="<?= $BASE ?>/admin/product_new.php">Admin: nuovo prodotto</a>
       <?php endif; ?>
 
+        <a href="<?= $BASE ?>/public/orders/purchased_products.php">Prodotti acquistati</a>
       <?php if (empty($_SESSION['user_id'])): ?>
         <a href="<?= $BASE ?>/public/auth/login.php">Log in</a>
         <a href="<?= $BASE ?>/public/auth/signup.php">Registrati</a>
@@ -31,6 +51,25 @@ if (session_status() === PHP_SESSION_NONE) session_start();
       <?php endif; ?>
     </nav>
   </div>
+
+  <?php
+  // Notifiche non lette per l'utente corrente (fail-soft se tabella mancante)
+  $notif_count = 0;
+  if (!empty($_SESSION['user_id'])) {
+    require_once __DIR__ . '/../../server/connection.php';
+    $uid = (int)$_SESSION['user_id'];
+    $res = $conn->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'notification'");
+    if ($res && $res->fetch_row()) {
+      $stmtN = $conn->prepare("SELECT COUNT(*) AS c FROM notification WHERE user_id=? AND is_read=0");
+      $stmtN->bind_param('i', $uid);
+      $stmtN->execute();
+      $rowN = $stmtN->get_result()->fetch_assoc();
+      $stmtN->close();
+      $notif_count = (int)($rowN['c'] ?? 0);
+    }
+  }
+?>
+
 </header>
 
 <script src="<?= $BASE ?>/public/javascript/menu.js"></script>
