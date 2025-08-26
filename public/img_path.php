@@ -3,7 +3,6 @@
 // Restituisce l'URL dell'immagine prodotto, usando $BASE se presente o calcolandolo al volo.
 // Convenzione: uploads/products/{id}.png|jpg|jpeg|webp oppure product.image_filename (solo nome file).
 
-// Calcola il BASE se non definito (es. se config_path.php non è stato incluso prima)
 function _img_base(): string {
   if (!empty($GLOBALS['BASE'])) {
     return rtrim($GLOBALS['BASE'], '/');
@@ -15,56 +14,28 @@ function _img_base(): string {
 }
 
 function product_image_url(array $p): string {
-  $BASE = _img_base();
-
-  // Cartelle web/FS
-  $webUploads = $BASE . '/uploads/products';
-  // __DIR__ è "public" -> risalgo a root progetto e poi entro in uploads/products
-  $fsUploads  = __DIR__ . '/../uploads/products';
-
-  // Placeholder: prova prima place_older.png nella cartella public/images
-  $placeholder = null;
-  foreach (['place_older.png', 'placeholder-product.png'] as $ph) {
-    $fsPh = __DIR__ . '/images/' . $ph;           // FS: public/images/...
-    if (is_file($fsPh)) {
-      $placeholder = $BASE . '/public/images/' . rawurlencode($ph); // URL
-      break;
-    }
-  }
-  if (!$placeholder) {
-    // Estremo fallback se il file non esiste
-    $placeholder = 'https://via.placeholder.com/600x400?text=No+Image';
-  }
-
-  // ID prodotto
   $id = (int)($p['id'] ?? 0);
-  if ($id <= 0) {
-    return $placeholder;
-  }
+  $fn = trim((string)($p['image_filename'] ?? ''));
+  $base = _img_base();
+  $webUploads = $base . '/uploads/products';
+  $fsUploads  = dirname(__DIR__) . '/uploads/products';
+  $placeholder = 'data:image/svg+xml;utf8,' . rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="#ddd"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16">No image</text></svg>');
 
-  // Eventuale nome file nel DB
-  $dbName = '';
-  if (!empty($p['image_filename'])) {
-    $dbName = basename(trim((string)$p['image_filename']));
-  }
-
-  // Candidati: prima il nome dal DB, poi {id}.{estensione}
-  $candidates = [];
-  if ($dbName !== '') {
-    $candidates[] = $dbName;
-  }
-  foreach (['png','jpg','jpeg','webp'] as $ext) {
-    $candidates[] = $id . '.' . $ext;
-  }
-
-  // Cerca il primo file esistente
-  foreach ($candidates as $name) {
-    $fs = $fsUploads . '/' . $name;
+  // Se il record specifica un filename, usa quello se esiste
+  if ($fn !== '') {
+    $fs = $fsUploads . '/' . $fn;
     if (is_file($fs)) {
-      return $webUploads . '/' . rawurlencode($name);
+      return $webUploads . '/' . rawurlencode($fn);
     }
   }
 
-  // Nessuna immagine trovata -> placeholder
+  // Prova estensioni standard basate su id
+  foreach (['jpg','jpeg','png','webp'] as $ext) {
+    $fs = $fsUploads . '/' . $id . '.' . $ext;
+    if (is_file($fs)) {
+      return $webUploads . '/' . $id . '.' . $ext;
+    }
+  }
+
   return $placeholder;
 }

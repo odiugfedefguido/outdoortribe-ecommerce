@@ -27,26 +27,25 @@ if (!$o) {
 <html lang="it">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Grazie per l'ordine</title>
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
+      <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
-  <style>
-    .ok{background:#e6ffed;border:1px solid #b7f5c6;padding:12px;border-radius:10px;margin:16px 0}
-    .actions{display:flex;gap:8px}
-  </style>
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
 
-<section class="container">
-  <h1>Grazie per l’ordine!</h1>
+<section class="page">
+  <h1>Grazie!</h1>
   <div class="ok">
-    <p><strong>Ordine #<?= (int)$o['id'] ?></strong> per <?= htmlspecialchars($o['customer_name'] ?? '') ?> registrato con stato <strong><?= htmlspecialchars($o['status']) ?></strong>.</p>
-    <p>Totale: <strong><?= number_format((float)$o['grand_total'], 2, ',', '.') ?> <?= htmlspecialchars($o['currency']) ?></strong></p>
+    <p><strong>Ordine #<?= (int)$o['id'] ?></strong> registrato con stato <strong><?= htmlspecialchars($o['status']) ?></strong>.</p>
+    <p>Totale: <strong><?= number_format((float)$o['grand_total'], 2, ',', '.') ?> <?= htmlspecialchars($o['currency'] ?? 'EUR') ?></strong></p>
   </div>
 
-  <div class="actions">
+  <div class="actions" style="margin-top:1rem;">
     <a class="btn-secondary" href="<?= $BASE ?>/public/orders/my_orders.php">Vedi i miei ordini</a>
     <a href="<?= $BASE ?>/public/products/list.php">Torna al catalogo</a>
   </div>

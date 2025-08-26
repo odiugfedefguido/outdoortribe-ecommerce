@@ -28,18 +28,22 @@ if (!$prod) {
 <html lang="it">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($prod['title']) ?></title>
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
+    <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
   <style>
-    .product-page{display:grid;gap:16px;grid-template-columns:1fr}
-    @media(min-width:900px){.product-page{grid-template-columns:1fr 1fr}}
-    .product-media img{width:100%;height:auto;max-height:480px;object-fit:contain;background:#f7f7f7;border-radius:10px}
-    .price{font-size:1.25rem;font-weight:700;margin:8px 0}
-    .stock{color:#555;margin-bottom:8px}
+    .product-page{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; margin-top:1rem;}
+    .product-media img{max-width:100%; border-radius:12px; display:block; background:#f4f4f4;}
+    .product-info h1{margin:.2rem 0 1rem;}
+    .price{font-weight:600; font-size:1.25rem; margin:.5rem 0;}
+    form{margin-top:1rem; display:flex; gap:.5rem; align-items:center;}
+    form input[type=number]{width:80px; padding:6px 8px;}
     form button{padding:8px 14px}
+    @media (max-width: 900px){ .product-page{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
@@ -55,20 +59,20 @@ if (!$prod) {
       <div class="price">
         <?= number_format((float)$prod['price'], 2, ',', '.') . ' ' . htmlspecialchars($prod['currency'] ?? 'EUR') ?>
       </div>
-      <div class="stock">Disponibilità: <?= (int)$prod['stock'] ?></div>
-      <p class="desc"><?= nl2br(htmlspecialchars($prod['description'] ?? '')) ?></p>
+      <div>
+        <?= nl2br(htmlspecialchars($prod['description'] ?? '')) ?>
+      </div>
 
-      <form method="post" action="<?= $BASE ?>/public/cart/add.php">
-        <input type="hidden" name="product_id" value="<?= (int)$prod['id'] ?>">
-        <label>Quantità:
-          <input type="number" name="qty" min="1" max="<?= max(1,(int)$prod['stock']) ?>" value="1" required>
-        </label>
-        <button type="submit">Aggiungi al carrello</button>
-      </form>
-
-      <p style="margin-top:12px;">
-        <a href="<?= $BASE ?>/public/products/list.php">← Torna al catalogo</a>
-      </p>
+      <?php if ((int)$prod['stock'] > 0): ?>
+        <form method="post" action="<?= $BASE ?>/public/cart/add.php">
+          <input type="hidden" name="product_id" value="<?= (int)$prod['id'] ?>">
+          <label>Qtà</label>
+          <input type="number" name="qty" value="1" min="1" max="<?= (int)$prod['stock'] ?>">
+          <button type="submit">Aggiungi al carrello</button>
+        </form>
+      <?php else: ?>
+        <p><strong>Esaurito</strong></p>
+      <?php endif; ?>
     </div>
   </div>
 </section>

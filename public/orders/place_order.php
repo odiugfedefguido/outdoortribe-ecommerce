@@ -2,7 +2,6 @@
 // public/orders/place_order.php
 require_once __DIR__ . '/../bootstrap.php'; // sessione + $BASE + $conn
 
-// Consenti solo POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   header("Location: {$BASE}/public/cart/view.php");
   exit;
@@ -16,160 +15,78 @@ if (empty($csrf) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['cs
   header("Location: {$BASE}/public/cart/view.php?err=csrf");
   exit;
 }
-// usa one-time token
-unset($_SESSION['csrf_token']);
-
-// Input base
-$F = fn($k)=> trim((string)($_POST[$k] ?? ''));
-$customer_name  = $F('customer_name');
-$customer_email = $F('customer_email');
-$customer_phone = $F('customer_phone');
-$ship_address   = $F('ship_address');
-$ship_city      = $F('ship_city');
-$ship_zip       = $F('ship_zip');
-$ship_country   = $F('ship_country');
-$notes          = substr($F('notes'), 0, 500);
-$payment_method = ($_POST['payment_method'] ?? 'cod') === 'card' ? 'card' : 'cod';
-
-// Validazioni minime
-if ($customer_name==='' || $customer_email==='' || $customer_phone==='' ||
-    $ship_address==='' || $ship_city==='' || $ship_zip==='' || $ship_country==='') {
-  header("Location: {$BASE}/public/orders/checkout.php?err=val");
-  exit;
-}
-
-// Carrello (blocco per consistenza)
-$sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock, p.is_active
-        FROM cart_item ci
-        JOIN product p ON p.id = ci.product_id
-        WHERE ci.user_id = ?
-        FOR UPDATE";
 
 $conn->begin_transaction();
 
 try {
+  // Leggi carrello e blocca righe prodotto
+  $sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock
+          FROM cart_item ci
+          JOIN product p ON p.id = ci.product_id
+          WHERE ci.user_id = ?
+          FOR UPDATE";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param('i', $userId);
   $stmt->execute();
-  $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+  $res = $stmt->get_result();
+  $items = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
   $stmt->close();
 
-  if (!$items) {
+  if (empty($items)) {
     $conn->rollback();
     header("Location: {$BASE}/public/cart/view.php?err=empty");
     exit;
   }
 
-  // Normalizza qty e filtra
-  $normalized = [];
-  $currency = 'EUR';
+  // Verifica stock
   foreach ($items as $it) {
-    if ((int)$it['is_active'] !== 1) continue;
-    $qty = (int)$it['qty'];
-    $stock = (int)$it['stock'];
-    if ($stock <= 0) continue;
-    if ($qty > $stock) $qty = $stock;
-    if ($qty <= 0) continue;
-
-    $currency = $it['currency'] ?: $currency;
-    $normalized[] = [
-      'product_id' => (int)$it['product_id'],
-      'qty'        => $qty,
-      'price'      => (float)$it['price'],
-      'title'      => $it['title'],
-    ];
-  }
-
-  if (!$normalized) {
-    // ripulisce e torna al carrello
-    $stmt = $conn->prepare("DELETE FROM cart_item WHERE user_id=?");
-    $stmt->bind_param('i', $userId);
-    $stmt->execute(); $stmt->close();
-    $conn->commit();
-    header("Location: {$BASE}/public/cart/view.php?err=nostock");
-    exit;
-  }
-
-  // Calcoli economici (coerenti con checkout)
-  $subtotal = 0.0;
-  foreach ($normalized as $n) { $subtotal += $n['price'] * $n['qty']; }
-  $shippingCost = ($subtotal >= 99.00) ? 0.00 : 6.90;
-  $vatRate = 22.00;
-  $vatAmount = round($subtotal * ($vatRate/100), 2);
-  $grandTotal = $subtotal + $shippingCost;
-
-  // (Simulazione pagamento carta)
-  if ($payment_method === 'card') {
-    $card_number = preg_replace('/\s+/', '', (string)($_POST['card_number'] ?? ''));
-    $card_exp    = (string)($_POST['card_exp'] ?? '');
-    $card_cvv    = (string)($_POST['card_cvv'] ?? '');
-    if (strlen($card_number) < 12 || strlen($card_exp) < 4 || strlen($card_cvv) < 3) {
+    if ((int)$it['qty'] <= 0 || (int)$it['stock'] < (int)$it['qty']) {
       $conn->rollback();
-      header("Location: {$BASE}/public/orders/checkout.php?err=card");
+      header("Location: {$BASE}/public/cart/view.php?err=nostock");
       exit;
     }
   }
 
+  // Calcoli
+  $subtotal = 0.0; $currency = 'EUR';
+  foreach ($items as $it) {
+    $subtotal += ((float)$it['price']) * (int)$it['qty'];
+    if (!empty($it['currency'])) $currency = $it['currency'];
+  }
+  $shipping = 0.0; $vat = 0.0; $grand = $subtotal + $shipping + $vat;
+
   // Crea ordine
-  $stmt = $conn->prepare(
-    "INSERT INTO `order`
-     (user_id, status, total_amount, currency, shipping_cost, vat_rate, vat_amount, grand_total,
-      customer_name, customer_email, customer_phone, ship_address, ship_city, ship_zip, ship_country, notes, payment_method)
-     VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  );
-  // tipi: i, d, s, d, d, d, d, s x 9
-  $stmt->bind_param(
-    'idsddddsssssssss',
-    $userId, $subtotal, $currency, $shippingCost, $vatRate, $vatAmount, $grandTotal,
-    $customer_name, $customer_email, $customer_phone, $ship_address, $ship_city, $ship_zip, $ship_country, $notes, $payment_method
-  );
+  $stmt = $conn->prepare("INSERT INTO `order` (user_id, status, total_amount, currency, shipping_cost, vat_amount, grand_total, created_at) VALUES (?, 'placed', ?, ?, ?, ?, ?, NOW())");
+  $stmt->bind_param('isdddd', $userId, $subtotal, $currency, $shipping, $vat, $grand);
   $stmt->execute();
   $orderId = (int)$stmt->insert_id;
   $stmt->close();
 
-  // Righe + scalatura stock
-  $stmtItem  = $conn->prepare("INSERT INTO order_item (order_id, product_id, qty, unit_price) VALUES (?, ?, ?, ?)");
-  $stmtStock = $conn->prepare("UPDATE product SET stock = stock - ? WHERE id = ? AND stock >= ?");
-
-  foreach ($normalized as $n) {
-    $pid   = $n['product_id'];
-    $qty   = $n['qty'];
-    $price = $n['price'];
-
-    $stmtItem->bind_param('iiid', $orderId, $pid, $qty, $price);
+  // Items
+  $stmtItem = $conn->prepare("INSERT INTO order_item (order_id, product_id, qty, unit_price, currency) VALUES (?,?,?,?,?)");
+  foreach ($items as $it) {
+    $pid = (int)$it['product_id'];
+    $qty = (int)$it['qty'];
+    $price = (float)$it['price'];
+    $cur = (string)($it['currency'] ?: $currency);
+    $stmtItem->bind_param('iiids', $orderId, $pid, $qty, $price, $cur);
     $stmtItem->execute();
 
-    $stmtStock->bind_param('iii', $qty, $pid, $qty);
-    $stmtStock->execute();
-    if ($stmtStock->affected_rows === 0) {
-      throw new Exception("Stock insufficiente per prodotto $pid");
-    }
+    // Scala stock
+    $stmt2 = $conn->prepare("UPDATE product SET stock = stock - ? WHERE id = ?");
+    $stmt2->bind_param('ii', $qty, $pid);
+    $stmt2->execute();
+    $stmt2->close();
   }
   $stmtItem->close();
-  $stmtStock->close();
 
   // Svuota carrello
   $stmt = $conn->prepare("DELETE FROM cart_item WHERE user_id=?");
   $stmt->bind_param('i', $userId);
-  $stmt->execute(); $stmt->close();
-
-  // Imposta stato pagato se carta
-  if ($payment_method === 'card') {
-    $stmt = $conn->prepare("UPDATE `order` SET status='paid' WHERE id=?");
-    $stmt->bind_param('i', $orderId);
-    $stmt->execute(); $stmt->close();
-  }
+  $stmt->execute();
+  $stmt->close();
 
   $conn->commit();
-
-  // Notifica venditori per prodotti esauriti
-  require_once __DIR__ . '/../../server/notify.php';
-  notify_sold_out_for_order($conn, $orderId);
-
-
-  // Notifica venditori per eventuali prodotti esauriti
-  require_once __DIR__ . '/../../server/notify.php';
-  notify_sold_out_for_order($conn, $orderId);
 
   header("Location: {$BASE}/public/orders/thank_you.php?order_id=" . $orderId);
   exit;

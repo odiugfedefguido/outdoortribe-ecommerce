@@ -2,11 +2,11 @@
 if (!isset($BASE) || $BASE === '') { include __DIR__ . '/../../public/config_path.php'; }
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Notifiche non lette (fail-soft se la tabella non esiste)
 $notif_count = 0;
 if (!empty($_SESSION['user_id'])) {
   require_once __DIR__ . '/../../server/connection.php';
   $uid = (int)$_SESSION['user_id'];
+  // Se esiste la tabella notification, conta i non letti
   $res = $conn->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'notification'");
   if ($res && $res->num_rows) {
     $stmtN = $conn->prepare("SELECT COUNT(*) AS c FROM notification WHERE user_id=? AND is_read=0");
@@ -18,28 +18,28 @@ if (!empty($_SESSION['user_id'])) {
   }
 }
 ?>
-<header>
+<header style="display:flex; align-items:center; justify-content:space-between; padding:.5rem 1rem; border-bottom:1px solid #eee;">
   <div class="left-section">
     <a href="<?= $BASE ?>/public/">
-      <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe">
+      <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe" style="height:36px;">
     </a>
   </div>
 
   <div class="right-section">
     <button class="btn-secondary" data-theme-toggle style="padding:6px 10px; border-radius:8px;">🌙</button>
 
-    <img class="menu-icon" src="<?= $BASE ?>/assets/icons/optionsMenu.svg" alt="menu">
-    <nav class="menu">
-      <a href="<?= $BASE ?>/public/notifications/" class="notif-bell">
-        🔔<?php if ($notif_count > 0): ?><span class="badge"><?= $notif_count ?></span><?php endif; ?>
-      </a>
+    <button id="menuToggle" aria-label="Menu" style="background:none; border:none; margin-left:.5rem;">
+      <img class="menu-icon" src="<?= $BASE ?>/assets/icons/optionsMenu.svg" alt="menu" style="height:28px;">
+    </button>
+
+    <nav id="mainMenu" class="menu" style="display:flex; gap:.75rem; align-items:center;">
       <a href="<?= $BASE ?>/public/">Home</a>
       <a href="<?= $BASE ?>/public/products/list.php">Prodotti</a>
       <a href="<?= $BASE ?>/public/cart/view.php">Carrello</a>
-      <a href="<?= $BASE ?>/public/orders/my_orders.php">I miei ordini</a>
+      <a href="<?= $BASE ?>/public/orders/my_orders.php">Ordini</a>
 
-      <?php if (!empty($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <a href="<?= $BASE ?>/admin/product_new.php">Admin: nuovo prodotto</a>
+      <?php if ($notif_count > 0): ?>
+        <a href="<?= $BASE ?>/public/notifications/index.php">Notifiche (<?= (int)$notif_count ?>)</a>
       <?php endif; ?>
 
       <?php if (empty($_SESSION['user_id'])): ?>
@@ -52,5 +52,18 @@ if (!empty($_SESSION['user_id'])) {
   </div>
 </header>
 
-<script src="<?= $BASE ?>/public/javascript/menu.js"></script>
+<script>
+  const menu = document.getElementById('mainMenu');
+  const toggle = document.getElementById('menuToggle');
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => {
+      menu.style.display = (menu.style.display === 'none' || getComputedStyle(menu).display === 'none') ? 'flex' : 'none';
+    });
+    // Mobile: nascondi di default
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      menu.style.display = 'none';
+    }
+  }
+</script>
+
 <script src="<?= $BASE ?>/public/javascript/theme.js"></script>
