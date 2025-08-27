@@ -42,8 +42,9 @@ if (!$p || (int)$p['is_active'] !== 1 || (int)$p['stock'] <= 0) {
   exit;
 }
 
-// Cap a stock
-if ($qty > (int)$p['stock']) $qty = (int)$p['stock'];
+// Cap a stock (mai più della disponibilità)
+$stock = (int)$p['stock'];
+if ($qty > $stock) $qty = $stock;
 
 // Aggiorna o inserisci
 $stmt = $conn->prepare("SELECT qty FROM cart_item WHERE user_id=? AND product_id=?");

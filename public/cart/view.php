@@ -4,11 +4,21 @@ require_once __DIR__ . '/../bootstrap.php';  // login obbligatorio + $BASE + $co
 
 $userId = current_user_id();
 
-// Carrello con join prodotti (prezzo corrente a vista; al checkout fisserai il prezzo)
+// 1) PULIZIA: rimuovi dal MIO carrello prodotti non più acquistabili
+$stmt = $conn->prepare(
+  "DELETE ci FROM cart_item ci
+   JOIN product p ON p.id = ci.product_id
+   WHERE ci.user_id=? AND (p.is_active<>1 OR p.stock<=0)"
+);
+$stmt->bind_param('i', $userId);
+$stmt->execute();
+$stmt->close();
+
+// 2) Carrello “pulito”: mostra solo prodotti attivi e con stock > 0
 $sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock
         FROM cart_item ci
         JOIN product p ON p.id = ci.product_id
-        WHERE ci.user_id = ?
+        WHERE ci.user_id = ? AND p.is_active=1 AND p.stock > 0
         ORDER BY ci.product_id DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $userId);
@@ -75,7 +85,7 @@ foreach ($items as $it) {
             <form method="post" action="<?= $BASE ?>/public/cart/update.php" class="actions">
               <input type="hidden" name="product_id" value="<?= (int)$it['product_id'] ?>">
               <input class="qty-input" type="number" name="qty"
-                     min="0" max="<?= (int)$it['stock'] ?>" value="<?= (int)$it['qty'] ?>">
+                     min="1" max="<?= (int)$it['stock'] ?>" value="<?= (int)$it['qty'] ?>">
               <button type="submit">Aggiorna</button>
             </form>
           </td>

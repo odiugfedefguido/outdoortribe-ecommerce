@@ -9,10 +9,11 @@ if ($id <= 0) {
   exit;
 }
 
+// Mostra la scheda SOLO se attivo e stock > 0
 $stmt = $conn->prepare(
-  "SELECT id, title, description, price, currency, stock, image_filename, is_active
+  "SELECT id, title, description, price, currency, stock, image_filename
    FROM product
-   WHERE id=? AND is_active=1"
+   WHERE id=? AND is_active=1 AND stock > 0"
 );
 $stmt->bind_param('i', $id);
 $stmt->execute();
@@ -20,7 +21,7 @@ $prod = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$prod) {
-  header("Location: {$BASE}/public/products/list.php?err=notfound");
+  header("Location: {$BASE}/public/products/list.php?err=nostock");
   exit;
 }
 ?>
@@ -31,7 +32,7 @@ if (!$prod) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($prod['title']) ?></title>
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
-    <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
@@ -63,16 +64,12 @@ if (!$prod) {
         <?= nl2br(htmlspecialchars($prod['description'] ?? '')) ?>
       </div>
 
-      <?php if ((int)$prod['stock'] > 0): ?>
-        <form method="post" action="<?= $BASE ?>/public/cart/add.php">
-          <input type="hidden" name="product_id" value="<?= (int)$prod['id'] ?>">
-          <label>Qtà</label>
-          <input type="number" name="qty" value="1" min="1" max="<?= (int)$prod['stock'] ?>">
-          <button type="submit">Aggiungi al carrello</button>
-        </form>
-      <?php else: ?>
-        <p><strong>Esaurito</strong></p>
-      <?php endif; ?>
+      <form method="post" action="<?= $BASE ?>/public/cart/add.php">
+        <input type="hidden" name="product_id" value="<?= (int)$prod['id'] ?>">
+        <label>Qtà</label>
+        <input type="number" name="qty" value="1" min="1" max="<?= (int)$prod['stock'] ?>">
+        <button type="submit">Aggiungi al carrello</button>
+      </form>
     </div>
   </div>
 </section>

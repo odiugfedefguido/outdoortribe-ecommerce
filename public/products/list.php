@@ -3,12 +3,12 @@
 require_once __DIR__ . '/../bootstrap.php';   // login obbligatorio + $BASE + $conn
 require_once __DIR__ . '/../img_path.php';    // helper immagini
 
-// Lista prodotti attivi
+// Catalogo: mostra SOLO prodotti attivi con stock > 0
 $sql = "SELECT p.id, p.title, p.price, p.currency, p.stock, p.image_filename
         FROM product p
-        WHERE p.is_active=1
+        WHERE p.is_active = 1 AND p.stock > 0
         ORDER BY p.id DESC";
-$res = $conn->query($sql);
+$res   = $conn->query($sql);
 $prods = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 <!DOCTYPE html>
@@ -18,7 +18,7 @@ $prods = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Catalogo prodotti</title>
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
-    <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
