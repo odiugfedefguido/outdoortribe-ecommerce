@@ -1,23 +1,24 @@
 <?php
 // public/auth/signup.php
-require_once dirname(__DIR__) . '/bootstrap.php';              // ../bootstrap.php
-require_once dirname(__DIR__, 2) . '/server/admin_secret.php'; // ../../server/admin_secret.php
+require_once dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/server/admin_secret.php';
 
 $errors = [];
-$name = trim($_POST['name'] ?? '');
+$name  = trim($_POST['name'] ?? '');
 $email = trim($_POST['email'] ?? '');
-$pwd = (string)($_POST['password'] ?? '');
-$pwd2 = (string)($_POST['password2'] ?? '');
+$pwd   = (string)($_POST['password'] ?? '');
+$pwd2  = (string)($_POST['password2'] ?? '');
 $want_admin = isset($_POST['want_admin']);
 $admin_code = trim($_POST['admin_code'] ?? '');
 
-// POST -> validazione + salvataggio
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // Validazioni base
   if ($name === '') { $errors['name'] = 'Nome richiesto'; }
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $errors['email'] = 'Email non valida'; }
   if ($pwd === '' || strlen($pwd) < 8) { $errors['password'] = 'Password minima 8 caratteri'; }
   if ($pwd !== $pwd2) { $errors['password2'] = 'Le password non coincidono'; }
 
+  // Ruolo admin opzionale
   $role = 'user';
   if ($want_admin) {
     if ($admin_code === '' || !password_verify($admin_code, ADMIN_CODE_HASH)) {
@@ -27,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
+  // Email già registrata?
   if (!$errors) {
-    // esiste già?
     $stmt = $conn->prepare("SELECT id FROM user WHERE email=? LIMIT 1");
     $stmt->bind_param('s', $email);
     $stmt->execute();
@@ -37,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
   }
 
+  // Inserimento
   if (!$errors) {
     $pwd_hash = password_hash($pwd, PASSWORD_DEFAULT);
     $stmt = $conn->prepare("INSERT INTO user (name, email, password_hash, role) VALUES (?, ?, ?, ?)");
@@ -59,87 +61,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="utf-8">
   <title>Registrazione</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- stessi CSS del login -->
+
+  <!-- CSS globali del sito -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
-  <style>
-    /* piccolo tocco per il form, come login */
-    main.page{ max-width:600px; }
-    label{ display:block; margin:.5rem 0 .25rem; font-weight:600; }
-    input[type="text"],input[type="email"],input[type="password"]{
-      width:100%; height:42px; padding:0 10px; border:1px solid #ccc; border-radius:10px; font-size:16px;
-    }
-    .helper{ color:#b00; font-size:.9rem; }
-    button[type=submit]{
-      margin-top:.75rem; padding:10px 16px; border-radius:10px; border:0; background:#029664; color:#fff;
-      font-weight:700; cursor:pointer;
-    }
-    .form-row{ margin-bottom:.5rem; }
-  </style>
+
+  <!-- Riusa lo stesso stile del login (immagine a fianco) -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/login.css">
+
+  <!-- (Opzionale) Google Font come nel design -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<?php include dirname(__DIR__,2) . "/templates/header/header.html"; ?>
-<?php include dirname(__DIR__,2) . "/templates/components/back.php"; ?>
+  <?php include dirname(__DIR__,2) . "/templates/header/header.html"; ?>
+  <!-- niente tasto indietro per restare coerenti col login -->
 
-<main class="page">
-  <h1>Crea account</h1>
+  <main class="auth-login">
+    <div class="auth-login__card">
+      <!-- lato immagine -->
+      <aside class="auth-login__image">
+        <img src="<?= $BASE ?>/assets/icons/login.svg" alt="Signup">
+      </aside>
 
-  <?php if (!empty($errors['generic'])): ?>
-    <div class="helper"><?= htmlspecialchars($errors['generic']) ?></div>
-  <?php endif; ?>
+      <!-- lato form -->
+      <section class="auth-login__form">
+        <div class="auth-login__brand">
+          <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe">
+        </div>
 
-  <form method="post" action="">
-    <div class="form-row">
-      <label>Nome</label>
-      <input type="text" name="name" value="<?= htmlspecialchars($name) ?>">
-      <?php if (!empty($errors['name'])): ?><div class="helper"><?= htmlspecialchars($errors['name']) ?></div><?php endif; ?>
+        <div class="auth-login__intro">
+          <p class="intro-hero">Join OutdoorTribe — ogni avventura inizia qui.</p>
+          <p class="intro-sub">Crea il tuo account per iniziare</p>
+          <?php if (!empty($errors['generic'])): ?>
+            <p class="intro-error"><?= htmlspecialchars($errors['generic']) ?></p>
+          <?php endif; ?>
+        </div>
+
+        <form method="post" class="auth-login__fields">
+          <label class="field">
+            <span class="field__label">Nome</span>
+            <input class="field__input" type="text" name="name" value="<?= htmlspecialchars($name) ?>">
+            <?php if (!empty($errors['name'])): ?><small class="intro-error"><?= htmlspecialchars($errors['name']) ?></small><?php endif; ?>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Email</span>
+            <input class="field__input" type="email" name="email" value="<?= htmlspecialchars($email) ?>">
+            <?php if (!empty($errors['email'])): ?><small class="intro-error"><?= htmlspecialchars($errors['email']) ?></small><?php endif; ?>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Password</span>
+            <input class="field__input" type="password" name="password">
+            <?php if (!empty($errors['password'])): ?><small class="intro-error"><?= htmlspecialchars($errors['password']) ?></small><?php endif; ?>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Ripeti password</span>
+            <input class="field__input" type="password" name="password2">
+            <?php if (!empty($errors['password2'])): ?><small class="intro-error"><?= htmlspecialchars($errors['password2']) ?></small><?php endif; ?>
+          </label>
+
+          <div class="field" style="display:flex; align-items:center; gap:.5rem; margin-top:6px;">
+            <input type="checkbox" id="want_admin" name="want_admin" <?= $want_admin ? 'checked' : '' ?>>
+            <label for="want_admin" class="field__label" style="margin:0;">Registrami come amministratore</label>
+          </div>
+
+          <div id="admin_code_wrap" class="field" style="<?= $want_admin ? '' : 'display:none' ?>">
+            <span class="field__label">Codice amministratore</span>
+            <input class="field__input" type="password" name="admin_code">
+            <?php if (!empty($errors['admin_code'])): ?><small class="intro-error"><?= htmlspecialchars($errors['admin_code']) ?></small><?php endif; ?>
+          </div>
+
+          <div class="auth-login__actions">
+            <button type="submit" class="btn-full">Crea account</button>
+            <a class="btn-outline" href="<?= $BASE ?>/public/auth/login.php">Hai già un account? Accedi</a>
+          </div>
+        </form>
+      </section>
     </div>
+  </main>
 
-    <div class="form-row">
-      <label>Email</label>
-      <input type="email" name="email" value="<?= htmlspecialchars($email) ?>">
-      <?php if (!empty($errors['email'])): ?><div class="helper"><?= htmlspecialchars($errors['email']) ?></div><?php endif; ?>
-    </div>
+  <?php include dirname(__DIR__,2) . "/templates/footer/footer.html"; ?>
 
-    <div class="form-row">
-      <label>Password</label>
-      <input type="password" name="password">
-      <?php if (!empty($errors['password'])): ?><div class="helper"><?= htmlspecialchars($errors['password']) ?></div><?php endif; ?>
-    </div>
-
-    <div class="form-row">
-      <label>Ripeti password</label>
-      <input type="password" name="password2">
-      <?php if (!empty($errors['password2'])): ?><div class="helper"><?= htmlspecialchars($errors['password2']) ?></div><?php endif; ?>
-    </div>
-
-    <div class="form-row" style="display:flex; align-items:center; gap:.5rem;">
-      <input type="checkbox" id="want_admin" name="want_admin" <?= $want_admin ? 'checked' : '' ?>>
-      <label for="want_admin" style="margin:0; font-weight:600;">Registrami come amministratore</label>
-    </div>
-
-    <div id="admin_code_wrap" class="form-row" style="<?= $want_admin ? '' : 'display:none' ?>">
-      <label>Codice amministratore</label>
-      <input type="password" name="admin_code">
-      <?php if (!empty($errors['admin_code'])): ?><div class="helper"><?= htmlspecialchars($errors['admin_code']) ?></div><?php endif; ?>
-    </div>
-
-    <button type="submit">Crea account</button>
-    <p class="form-row">Hai già un account? <a href="<?= $BASE ?>/public/auth/login.php">Accedi</a></p>
-  </form>
-</main>
-
-<?php include dirname(__DIR__,2) . "/templates/footer/footer.html"; ?>
-
-<script>
-  // toggle campo codice admin
-  const cb = document.getElementById('want_admin');
-  const wrap = document.getElementById('admin_code_wrap');
-  if (cb) cb.addEventListener('change', () => { wrap.style.display = cb.checked ? '' : 'none'; });
-</script>
+  <script>
+    const cb = document.getElementById('want_admin');
+    const wrap = document.getElementById('admin_code_wrap');
+    if (cb) cb.addEventListener('change', () => { wrap.style.display = cb.checked ? '' : 'none'; });
+  </script>
 </body>
 </html>
