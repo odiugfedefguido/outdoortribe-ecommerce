@@ -5,23 +5,23 @@ require_once __DIR__ . '/img_path.php';
 $q   = isset($_GET['q'])   ? trim($_GET['q'])   : '';
 $cat = isset($_GET['cat']) ? (int)$_GET['cat']  : 0;
 
-// Categorie per filtro
+/* Categorie per filtro */
 $cats = [];
 if ($res = $conn->query("SELECT id, name FROM category ORDER BY name")) {
   $cats = $res->fetch_all(MYSQLI_ASSOC);
 }
 
-// SOLO attivi e con stock > 0
+/* SOLO attivi e con stock > 0 */
 $where  = ["p.is_active=1", "p.stock > 0"];
 $params = [];
 $types  = '';
 
 if ($q !== '') {
+  // forza la stessa collation per evitare "Illegal mix of collations"
   $where[]  = "("
-          . "p.title COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%') "
-          . "OR p.description COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%')"
-          . ")";
-
+            . "p.title COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%') "
+            . "OR p.description COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%')"
+            . ")";
   $params[] = $q; $params[] = $q; $types .= 'ss';
 }
 if ($cat > 0) {
@@ -56,8 +56,7 @@ $stmt->close();
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
-  <!-- carica per ultimo così vince la cascata -->
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/catalog.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/catalog.css"><!-- ultimo -->
 </head>
 <body>
 <?php include __DIR__ . "/../templates/header/header.html"; ?>
@@ -65,6 +64,7 @@ $stmt->close();
 <section class="page">
   <h1>Prodotti</h1>
 
+  <!-- Ricerca SOLO in home -->
   <form method="get" class="searchbar">
     <input type="text" name="q" placeholder="Cerca..." value="<?= htmlspecialchars($q) ?>">
     <select name="cat">
