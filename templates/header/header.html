@@ -45,8 +45,8 @@ if (!empty($_SESSION['user_id'])) {
         <a href="<?= $BASE ?>/public/seller/my_products.php">I miei prodotti</a>
       <?php endif; ?>
 
-      <?php if ($notif_count > 0): ?>
-        <a href="<?= $BASE ?>/public/notifications/index.php">Notifiche (<?= (int)$notif_count ?>)</a>
+      <?php if (!empty($_SESSION['user_id'])): ?>
+        <a href="<?= $BASE ?>/public/notifications/index.php" class="notif-link">Notifiche<?php if ($notif_count>0): ?><span class="notif-badge"><?= (int)$notif_count ?></span><?php endif; ?></a>
       <?php endif; ?>
 
       <?php if (empty($_SESSION['user_id'])): ?>

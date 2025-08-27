@@ -48,3 +48,20 @@ header {
   position:absolute; top:-6px; right:-10px; min-width:18px; height:18px; padding:0 4px;
   border-radius:9px; font-size:12px; line-height:18px; text-align:center; background:#e11; color:#fff;
 }
+
+
+/* --- Notifications badge --- */
+.notif-link { position: relative; display: inline-flex; align-items: center; gap: .35rem; }
+.notif-badge {
+  display: inline-block;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 .4rem;
+  border-radius: 9999px;
+  background: #d00;
+  color: #fff;
+  font-size: .75rem;
+  line-height: 1.25rem;
+  text-align: center;
+  font-weight: 600;
+}

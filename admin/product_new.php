@@ -1,8 +1,13 @@
 <?php
 // admin/product_new.php  (admin è sorella di public)
 require_once __DIR__ . '/../public/bootstrap.php'; // sessione + $BASE + $conn
+$uid = current_user_id();
 if (current_user_role() !== 'admin') { http_response_code(403); echo 'Accesso negato'; exit; } // solo admin
-$uid = current_user_id(); // <- verrà salvato in seller_id
+
+// Fallback: se per qualunque motivo $BASE non è settata, ricarico la config
+if (!isset($BASE) || $BASE === '') {
+  require_once __DIR__ . '/../public/config_path.php';
+}
 
 // Carico categorie
 $cats = [];
@@ -31,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($title === '' || $price <= 0) {
     $err = 'Titolo e prezzo sono obbligatori.';
   } else {
-    // Slug unico (consente nomi duplicati)
+    // Slug unico (nome duplicato consentito)
     $slugBase = slugify($title);
     $slug = $slugBase;
     $i = 2;
@@ -45,26 +50,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $i++;
     }
     $stmtSlug->close();
-
-    // INSERT con seller_id
-    $stmt = $conn->prepare("INSERT INTO product
-      (seller_id, category_id, title, slug, description, price, currency, stock, is_active, image_filename)
-      VALUES (?,?,?,?,?,?,?,?,?,NULL)");
+    $stmt = $conn->prepare("INSERT INTO product (seller_id,category_id,title,slug,description,price,currency,stock,is_active,image_filename) VALUES (?,?,?,?,?,?,?,?,?,NULL)");
     $stmt->bind_param('iisssdsii', $uid, $category_id, $title, $slug, $description, $price, $currency, $stock, $is_active);
     $stmt->execute();
     $pid = (int)$stmt->insert_id;
     $stmt->close();
 
     // Upload immagine opzionale
-    $uploadsDir = __DIR__ . '/../uploads/products'; // admin -> uploads
-    if (!is_dir($uploadsDir)) { @mkdir($uploadsDir, 0777, true); }
-
     if (!empty($_FILES['image']['tmp_name'])) {
       $allowed = ['png','jpg','jpeg','webp'];
       $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
       if (!in_array($ext, $allowed, true)) {
         $err = 'Formato immagine non supportato (usa png/jpg/jpeg/webp).';
       } else {
+        $uploadsDir = __DIR__ . '/../uploads/products'; // admin -> uploads
+        if (!is_dir($uploadsDir)) { @mkdir($uploadsDir, 0777, true); }
         $filename = $pid . '.' . $ext;
         $dest = $uploadsDir . '/' . $filename;
         if (move_uploaded_file($_FILES['image']['tmp_name'], $dest)) {
@@ -74,12 +74,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $stmt->close();
         }
       }
-    } else {
-      // Se non carichi nulla → usa default.jpg se esiste
+    }
+
+    // Se non è stata caricata alcuna immagine, imposta default.jpg se esiste
+    if (!$err && empty($_FILES['image']['tmp_name'])) {
+      $uploadsDir = __DIR__ . '/../uploads/products';
       $defaultFile = $uploadsDir . '/default.jpg';
       if (is_file($defaultFile)) {
         $filename = 'default.jpg';
-        $stmt = $conn->prepare("UPDATE product SET image_filename=? WHERE id=?");
+        $stmt = $conn->prepare('UPDATE product SET image_filename=? WHERE id=?');
         $stmt->bind_param('si', $filename, $pid);
         $stmt->execute();
         $stmt->close();
@@ -99,7 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Admin · Nuovo prodotto</title>
+
+  <!-- Base URL per stabilizzare link/asset -->
   <base href="<?= htmlspecialchars($BASE) ?>/">
+
+  <!-- Stessi CSS delle pagine public -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
@@ -110,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <section class="container">
   <h1>Aggiungi prodotto</h1>
-  <?php if ($err): ?><div class="notice" style="color:#b00;"><?= htmlspecialchars($err) ?></div><?php endif; ?>
+  <?php if ($err): ?><div class="notice"><?= htmlspecialchars($err) ?></div><?php endif; ?>
   <?php if ($msg): ?><div class="ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
   <form method="post" enctype="multipart/form-data">

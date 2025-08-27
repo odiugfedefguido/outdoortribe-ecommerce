@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $_SESSION['user_name'] = $u['name'] ?? '';
       $_SESSION['user_role'] = $u['role'] ?? 'user';
       $next = $_POST['next'] ?? ($BASE . '/public/');
+      if (strpos($next, $BASE . '/') !== 0) { $next = $BASE . '/public/'; }
       header("Location: " . $next);
       exit;
     } else {

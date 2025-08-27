@@ -37,13 +37,10 @@ function product_image_url(array $p): string {
     }
   }
 
+  // default.jpg nella cartella uploads/products (se esiste)
   $default = $fsUploads . '/default.jpg';
   if (is_file($default)) {
     return $webUploads . '/default.jpg';
   }
-
-
-
-
   return $placeholder;
 }
