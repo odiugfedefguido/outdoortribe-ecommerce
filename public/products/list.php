@@ -23,6 +23,8 @@ $prods = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/catalog.css">
+
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
