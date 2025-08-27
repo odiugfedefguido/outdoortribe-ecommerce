@@ -1,5 +1,4 @@
 <?php
-// public/auth/signup.php
 require_once dirname(__DIR__) . '/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/server/admin_secret.php';
 
@@ -12,13 +11,11 @@ $want_admin = isset($_POST['want_admin']);
 $admin_code = trim($_POST['admin_code'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Validazioni base
   if ($name === '') { $errors['name'] = 'Nome richiesto'; }
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $errors['email'] = 'Email non valida'; }
   if ($pwd === '' || strlen($pwd) < 8) { $errors['password'] = 'Password minima 8 caratteri'; }
   if ($pwd !== $pwd2) { $errors['password2'] = 'Le password non coincidono'; }
 
-  // Ruolo admin opzionale
   $role = 'user';
   if ($want_admin) {
     if ($admin_code === '' || !password_verify($admin_code, ADMIN_CODE_HASH)) {
@@ -28,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // Email già registrata?
   if (!$errors) {
     $stmt = $conn->prepare("SELECT id FROM user WHERE email=? LIMIT 1");
     $stmt->bind_param('s', $email);
@@ -38,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
   }
 
-  // Inserimento
   if (!$errors) {
     $pwd_hash = password_hash($pwd, PASSWORD_DEFAULT);
     $stmt = $conn->prepare("INSERT INTO user (name, email, password_hash, role) VALUES (?, ?, ?, ?)");
@@ -62,33 +57,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Registrazione</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <!-- CSS globali del sito -->
+  <!-- CSS globali -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 
-  <!-- Riusa lo stesso stile del login (immagine a fianco) -->
+  <!-- Stesso stile del login -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/login.css">
 
-  <!-- (Opzionale) Google Font come nel design -->
+  <!-- Font (opzionale) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <?php include dirname(__DIR__,2) . "/templates/header/header.html"; ?>
-  <!-- niente tasto indietro per restare coerenti col login -->
+<body class="auth-no-header">
+
+  <!-- NIENTE header/back qui -->
 
   <main class="auth-login">
     <div class="auth-login__card">
-      <!-- lato immagine -->
       <aside class="auth-login__image">
         <img src="<?= $BASE ?>/assets/icons/login.svg" alt="Signup">
       </aside>
 
-      <!-- lato form -->
       <section class="auth-login__form">
         <div class="auth-login__brand">
           <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe">

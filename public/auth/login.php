@@ -45,33 +45,30 @@ $next = $_GET['next'] ?? ($BASE . '/public/');
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Accedi</title>
 
-  <!-- CSS globali del sito -->
+  <!-- CSS globali -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 
-  <!-- CSS specifico login (layout immagine a fianco) -->
+  <!-- CSS specifico login/signup (layout immagine a fianco) -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/login.css">
 
-  <!-- (Opzionale) Google Font come nel design di esempio -->
+  <!-- Font (opzionale) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <?php include __DIR__ . "/../../templates/header/header.html"; ?>
-  <!-- NIENTE back.php qui -->
+<body class="auth-no-header"><!-- classe che rimuove margine top -->
+
+  <!-- NIENTE header/back qui -->
 
   <main class="auth-login">
     <div class="auth-login__card">
-      <!-- lato immagine -->
       <aside class="auth-login__image">
         <img src="<?= $BASE ?>/assets/icons/login.svg" alt="Login" />
       </aside>
 
-      <!-- lato form -->
       <section class="auth-login__form">
         <div class="auth-login__brand">
           <img class="logo" src="<?= $BASE ?>/assets/icons/logo.svg" alt="OutdoorTribe">
