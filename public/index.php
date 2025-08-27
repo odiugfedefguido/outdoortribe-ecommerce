@@ -3,8 +3,8 @@
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/img_path.php';
 
-$q = isset($_GET['q']) ? trim($_GET['q']) : '';
-$cat = isset($_GET['cat']) ? (int)$_GET['cat'] : 0;
+$q   = isset($_GET['q'])   ? trim($_GET['q'])   : '';
+$cat = isset($_GET['cat']) ? (int)$_GET['cat']  : 0;
 
 // Categorie per il filtro
 $cats = [];
@@ -12,17 +12,17 @@ if ($res = $conn->query("SELECT id, name FROM category ORDER BY name")) {
   $cats = $res->fetch_all(MYSQLI_ASSOC);
 }
 
-// Query prodotti con filtri
-$where = ["p.is_active=1"];
+// Query prodotti con filtri: SOLO attivi e con stock > 0
+$where  = ["p.is_active=1", "p.stock > 0"];
 $params = [];
-$types = '';
+$types  = '';
 
 if ($q !== '') {
-  $where[] = "(p.title LIKE CONCAT('%', ?, '%') OR p.description LIKE CONCAT('%', ?, '%'))";
+  $where[]  = "(p.title LIKE CONCAT('%', ?, '%') OR p.description LIKE CONCAT('%', ?, '%'))";
   $params[] = $q; $params[] = $q; $types .= 'ss';
 }
 if ($cat > 0) {
-  $where[] = "p.category_id = ?";
+  $where[]  = "p.category_id = ?";
   $params[] = $cat; $types .= 'i';
 }
 
@@ -35,7 +35,7 @@ $sql = "SELECT p.id, p.title, p.price, p.currency, p.stock, p.image_filename
 
 $stmt = $conn->prepare($sql);
 if ($types !== '') {
-  // bind_param con numero variabile di argomenti richiede i riferimenti
+  // bind_param variabile: gli argomenti devono essere passati per riferimento
   $bind = array_merge([$types], $params);
   foreach ($bind as $k => $v) { $bind[$k] = &$bind[$k]; }
   call_user_func_array([$stmt, 'bind_param'], $bind);
@@ -51,7 +51,7 @@ $stmt->close();
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OutdoorTribe · Home</title>
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
-    <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
