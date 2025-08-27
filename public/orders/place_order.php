@@ -1,6 +1,7 @@
 <?php
 // public/orders/place_order.php
 require_once __DIR__ . '/../bootstrap.php'; // sessione + $BASE + $conn
+require_once __DIR__ . '/../../server/notify.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   header("Location: {$BASE}/public/cart/view.php");
@@ -85,6 +86,10 @@ try {
   $stmt->bind_param('i', $userId);
   $stmt->execute();
   $stmt->close();
+
+    // Notifiche: vendite ai seller + esauriti a seller e utenti con carrello
+  notify_sellers_items_sold_for_order($conn, $orderId, $BASE);
+  notify_when_sold_out_for_order($conn, $orderId, $BASE);
 
   $conn->commit();
 
