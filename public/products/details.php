@@ -35,6 +35,7 @@ if (!$prod) {
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
   <style>
     .product-page{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; margin-top:1rem;}
@@ -49,6 +50,7 @@ if (!$prod) {
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/components/back.php"; ?>
 
 <section class="container">
   <div class="product-page">

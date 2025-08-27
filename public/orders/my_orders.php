@@ -49,10 +49,12 @@ if (!empty($orderIds)) {
     <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/components/back.php"; ?>
 
 <section class="page">
   <h1>I miei ordini</h1>

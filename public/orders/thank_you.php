@@ -33,6 +33,7 @@ if (!$o) {
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/components/back.php"; ?>
 
 <section class="page">
   <h1>Grazie!</h1>

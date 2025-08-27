@@ -123,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
   <style>
     .notice{background:#fff4f4;color:#a00;border:1px solid #e6b8b8;padding:.75rem;border-radius:8px;margin:.75rem 0;}
@@ -134,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <?php include __DIR__ . "/../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../templates/components/back.php"; ?>
 
 <section class="container">
   <h1>Aggiungi prodotto</h1>

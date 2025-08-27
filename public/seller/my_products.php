@@ -11,6 +11,7 @@ $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
 <title>I miei prodotti</title><link rel="stylesheet" href="<?= $BASE ?>/assets/styles.css">
 <style>.badge-esaurito{background:#222;color:#fff;border-radius:8px;padding:2px 8px;font-size:12px;}table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border-bottom:1px solid #eee;padding:8px;text-align:left;}</style></head><body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/components/back.php"; ?>
 <section class="container"><h1>I miei prodotti</h1>
 <?php if (!$rows): ?><p>Non hai ancora caricato prodotti.</p><?php else: ?>
 <table><thead><tr><th>ID</th><th>Titolo</th><th>Prezzo</th><th>Stock</th><th>Stato</th></tr></thead><tbody>

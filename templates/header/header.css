@@ -1,5 +1,5 @@
-/* templates/header/header.css */
-header {
+/* Header layout */
+.ot-header {
   font-family: system-ui, sans-serif;
   height: 60px;
   display: flex;
@@ -9,15 +9,30 @@ header {
   margin: auto;
   position: fixed; top: 0; left: 0; right: 0;
   z-index: 10;
+  padding: .5rem 1rem;
+  border-bottom: 1px solid #eee;
 }
 
 .left-section { flex: 1; display: flex; align-items:center; }
 .right-section { display: flex; align-items: center; gap: 10px; }
 
-.logo { margin-left: 10px; height: 45px; }
+/* Brand + Back */
+.brand-wrap{ display:flex; align-items:center; gap:.5rem; }
+.back-btn{
+  display:inline-flex; width:36px; height:36px;
+  align-items:center; justify-content:center;
+  border-radius:9999px; text-decoration:none;
+  transition: background .2s ease;
+}
+.back-btn:hover{ background: rgba(255,255,255,.12); }
+.back-btn img{ width:20px; height:20px; display:block; }
+.brand{ display:inline-flex; align-items:center; }
+.brand-logo{ height:36px; display:block; }
+@media (max-width: 640px){ .brand-logo{ height:28px; } }
 
-.menu-icon { margin-right: 10px; height: 48px; display:none; }
-
+/* Menu */
+.menu-toggle{ background:none; border:none; margin-left:.5rem; }
+.menu-icon{ height:28px; display:none; }
 .menu {
   position: absolute;
   top: 65px; right: 0;
@@ -38,19 +53,12 @@ header {
 @media (min-width: 769px) {
   .menu { position: static; background: transparent; width: auto; padding: 0; display: flex; flex-direction: row; gap: 8px; }
 }
-
 @media (max-width: 768px) {
   .menu-icon { display: block; cursor: pointer; }
   .menu.active { display: flex; }
 }
-.notif-bell { position: relative; display:inline-block; margin-right:.5rem; }
-.notif-bell .badge {
-  position:absolute; top:-6px; right:-10px; min-width:18px; height:18px; padding:0 4px;
-  border-radius:9px; font-size:12px; line-height:18px; text-align:center; background:#e11; color:#fff;
-}
 
-
-/* --- Notifications badge --- */
+/* Notifications badge */
 .notif-link { position: relative; display: inline-flex; align-items: center; gap: .35rem; }
 .notif-badge {
   display: inline-block;
