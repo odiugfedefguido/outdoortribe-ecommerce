@@ -90,7 +90,8 @@ function fetch_items(mysqli $conn, string $itemsTbl, int $orderId): array {
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/orders.css"><!-- ultimo -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/orders.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css"><!-- per la freccia -->
 
   <!-- Forza griglia responsive anche se altri CSS provano a sovrascrivere -->
   <style>
@@ -106,6 +107,7 @@ function fetch_items(mysqli $conn, string $itemsTbl, int $orderId): array {
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/components/back.php"; ?>  <!-- <<< FRECCIA INDietro QUI -->
 
 <section class="page">
   <h1>I miei ordini</h1>
