@@ -6,9 +6,18 @@
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
 // 2) BASE URL normalizzato alla radice del progetto (togli tutto da /public in poi)
-$scriptDir = rtrim(str_replace('\\','/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
-$BASE = preg_replace('#/public(?:/.*)?$#', '', $scriptDir);
-if ($BASE === '/' || $BASE === false) { $BASE = ''; } // caso root
+// 2) BASE URL normalizzato alla radice del progetto (togli /public o /admin)
+$script = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\','/', $_SERVER['SCRIPT_NAME']) : '';
+$BASE = '';
+if ($script !== '') {
+  if (preg_match('#^(.+?)/(public|admin)(/|$)#', $script, $m)) {
+    $BASE = $m[1];
+  } else {
+    $BASE = rtrim(dirname($script), '/');
+    if ($BASE === '/' || $BASE === false) { $BASE = ''; }
+  }
+}
+
 
 // 3) DB
 require_once __DIR__ . '/../server/connection.php';
