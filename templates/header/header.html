@@ -6,7 +6,7 @@ $notif_count = 0;
 if (!empty($_SESSION['user_id'])) {
   require_once __DIR__ . '/../../server/connection.php';
   $uid = (int)$_SESSION['user_id'];
-  // Se esiste la tabella notification, conta i non letti
+  // Se esiste la tabella notification, conta i non letti (fail-soft)
   $res = $conn->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'notification'");
   if ($res && $res->num_rows) {
     $stmtN = $conn->prepare("SELECT COUNT(*) AS c FROM notification WHERE user_id=? AND is_read=0");

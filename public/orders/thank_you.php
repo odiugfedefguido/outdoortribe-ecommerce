@@ -30,10 +30,6 @@ if (!$o) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Grazie per l'ordine</title>
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
-      <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>

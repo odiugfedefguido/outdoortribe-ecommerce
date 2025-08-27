@@ -23,9 +23,7 @@ foreach ($items as $it) {
   $subtotal += $line;
   if (!empty($it['currency'])) $currency = $it['currency'];
 }
-$shipping = 0.0; // per ora
-$vat = 0.0; // per ora
-$grand = $subtotal + $shipping + $vat;
+$shipping = 0.0; $vat = 0.0; $grand = $subtotal + $shipping + $vat;
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -34,10 +32,6 @@ $grand = $subtotal + $shipping + $vat;
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Checkout</title>
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
-      <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>

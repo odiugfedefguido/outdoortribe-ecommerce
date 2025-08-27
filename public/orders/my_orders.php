@@ -45,7 +45,7 @@ if (!empty($orderIds)) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>I miei ordini</title>
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
+    <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
     <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
