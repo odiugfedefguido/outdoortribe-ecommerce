@@ -1,0 +1,102 @@
+/* --- Catalog & Home grid --- */
+
+/* l'header è fixed (~60px): sposta il contenuto sotto e allarga la pagina */
+section.page{
+  margin: 70px auto 24px !important;   /* sotto l'header */
+  max-width: 1280px !important;        /* larghezza comoda per 4–6 card */
+  width: 100% !important;
+  padding: 0 16px;
+}
+
+/* Griglia auto-responsiva: quante colonne ci stanno, ci stanno */
+section.page .grid-prod{
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch;
+}
+
+@media (max-width: 480px){
+  section.page .grid-prod{
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  }
+}
+
+/* Card prodotto */
+:root{
+  --card-radius: 14px;
+  --card-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+.grid-prod .prod-card{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #fff;
+  border-radius: var(--card-radius);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.grid-prod .prod-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.09);
+}
+
+/* Immagine: nessun taglio (contain). */
+.grid-prod .prod-card img{
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
+  display: block;
+  background: #f4f4f4;
+}
+
+/* Testi */
+.grid-prod .prod-title{
+  padding: 10px 12px 0;
+  font-weight: 600;
+  line-height: 1.25;
+  min-height: 2.5em; /* 2 righe */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.grid-prod .prod-price{
+  padding: 8px 12px 12px;
+  font-weight: 700;
+  color: #0a0;
+}
+
+/* --- Searchbar: input largo + select proporzionato + bottone allineato --- */
+.searchbar{
+  display: grid !important;
+  grid-template-columns: 1fr minmax(220px, 320px) auto;  /* input | select | bottone */
+  gap: 12px;
+  align-items: center;
+  margin: 1rem 0;
+}
+.searchbar input[type="text"]{
+  width: 100% !important;
+  min-width: 0;
+  height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.searchbar select{
+  width: 100%;
+  height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.searchbar button{
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+}
+@media (max-width: 640px){
+  .searchbar{ grid-template-columns: 1fr; }
+  .searchbar button{ width: 100%; }
+}

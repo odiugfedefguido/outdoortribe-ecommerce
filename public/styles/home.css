@@ -1,0 +1,88 @@
+/* public/styles/home.css — Stile dedicato alla Home/Catalogo */
+/* Usa le variabili definite in main.css */
+section.page{ max-width:1200px; }
+
+.home-hero{
+  background: linear-gradient(180deg, rgba(53,91,62,.08), rgba(53,91,62,0));
+  border:1px solid var(--line);
+  border-radius: var(--radius, 12px);
+  padding: 16px 16px 10px;
+  margin: 8px 0 10px;
+  box-shadow: var(--shadow);
+}
+.home-hero h1{ margin:0 0 6px; font-weight:900; }
+.home-hero .muted{ color: var(--muted); }
+
+/* Filtri */
+.home-filter{
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 320px) auto auto;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0 10px;
+}
+@media (max-width: 720px){
+  .home-filter{ grid-template-columns: 1fr; }
+}
+
+.home-filter input[type="text"],
+.home-filter select,
+.home-filter button,
+.home-filter a.btn{
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+.home-filter input[type="text"]:focus,
+.home-filter select:focus{ outline: 2px solid rgba(53,91,62,.25); }
+
+.home-filter button{
+  background: var(--brand);
+  color: #fff;
+  font-weight: 800;
+  border: 1px solid var(--brand-600);
+  cursor: pointer;
+}
+.home-filter button:hover{ filter: brightness(.96); }
+.home-filter a.btn{
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Azioni e risultati */
+.home-actions{ display:flex; align-items:center; justify-content:space-between; margin: 6px 0 14px; }
+.home-actions small{ color: var(--muted); }
+
+/* Griglia e card prodotto (affina hover) */
+.grid-prod{ gap: 16px; }
+.grid-prod .prod-card{
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 0;
+  transition: box-shadow .15s ease, transform .06s ease;
+}
+.grid-prod .prod-card:hover{
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.grid-prod .prod-card img{
+  border-radius: 10px;
+}
+.grid-prod .prod-title{
+  padding: 8px 10px 4px;
+  font-weight: 800;
+  min-height: 44px;
+}
+.grid-prod .prod-price{
+  padding: 0 10px 12px;
+  font-weight: 800;
+}
+
+/* Spaziatura sotto header sticky */
+@media (min-width: 0px){
+  section.page{ margin-top: 80px; }
+}

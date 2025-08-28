@@ -1,0 +1,67 @@
+/* --- My Orders: griglia come Home/Catalogo --- */
+
+section.page{
+  margin: 70px auto 24px;
+  max-width: 1280px;
+  width: 100%;
+  padding: 0 16px;
+}
+
+/* griglia responsive */
+section.page .orders{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* card stile “prod-card” */
+:root{ --card-radius:14px; --card-shadow:0 6px 18px rgba(0,0,0,.06); }
+
+.orders .order-card{
+  display: grid;
+  grid-template-rows: auto auto 1fr;  /* head, meta, body */
+  background: #fff;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: var(--card-shadow);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.orders .order-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.09);
+}
+
+.order-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 14px;
+  background:#fff; border-bottom:0;
+}
+.order-title{ font-weight:700; color:#0b1f19; }
+.order-total{ font-weight:800; color:#0a0; }
+
+.order-meta{ font-size:.85rem; color:#677; padding: 0 14px 4px; }
+.order-body{ padding: 0 14px 14px; }
+
+/* tabella righe ordine */
+.table{ width:100%; border-collapse:collapse; margin-top:10px; }
+.table th,.table td{ padding:10px 12px; border-bottom:1px solid #edf1ef; text-align:left; }
+.table thead th{ font-size:.9rem; font-weight:700; color:#22332d; background:#f6f8f7; }
+.table tfoot td{ font-weight:700; }
+.right{ text-align:right; }
+
+/* badge stato */
+.badge{
+  display:inline-block; padding:4px 10px; border-radius:9999px;
+  font-size:.8rem; font-weight:700; background:#ecf4ff; color:#0b4ea9;
+}
+.badge.placed   { background:#eaf7ff; color:#0a5aa3; }
+.badge.paid     { background:#eafcf0; color:#0a7a2a; }
+.badge.shipped  { background:#fff5e6; color:#a66b00; }
+.badge.canceled { background:#ffecec; color:#a10a0a; }
+
+/* 1 colonna su mobile */
+@media (max-width: 560px){
+  section.page .orders{ grid-template-columns: 1fr; }
+}
