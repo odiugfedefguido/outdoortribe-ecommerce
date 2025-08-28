@@ -70,6 +70,9 @@ $shipping = 0.0; $vat = 0.0; $grand = $subtotal + $shipping + $vat;
       border:1px solid #ccc; border-radius:10px; font-size:16px;
       outline:none;
     }
+    .error{ color:#a10a0a; font-size:.9rem; margin:.25rem 0 .5rem; display:none; }
+    .invalid{ border-color:#a10a0a !important; background:#ffecec; }
+
     button[type=submit]{
       margin-top:.75rem; padding:10px 16px; border-radius:10px; border:0;
       background:#029664; color:#fff; font-weight:700; cursor:pointer;
@@ -96,19 +99,35 @@ $shipping = 0.0; $vat = 0.0; $grand = $subtotal + $shipping + $vat;
     <?php else: ?>
       <div class="checkout-grid">
         <div>
-          <form method="post" action="<?= $BASE ?>/public/orders/place_order.php">
+          <!-- novalidate per gestire messaggi custom via JS -->
+          <form id="checkoutForm" method="post" action="<?= $BASE ?>/public/orders/place_order.php" novalidate>
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
             <fieldset style="margin-bottom:1rem;">
               <legend>Indirizzo spedizione</legend>
+
               <label>Nome completo</label>
-              <input name="ship_name" required>
+              <input id="ship_name" name="ship_name" required
+                     placeholder="Es. Mario Rossi"
+                     pattern="[A-Za-zÀ-ÖØ-öø-ÿ' ]{2,60}">
+              <div class="error" id="err_ship_name">Inserisci un nome valido (solo lettere, spazi, apostrofi, 2–60 caratteri).</div>
+
               <label>Indirizzo</label>
-              <input name="ship_addr" required>
+              <input id="ship_addr" name="ship_addr" required placeholder="Via, numero civico">
+              <div class="error" id="err_ship_addr">Indirizzo troppo corto.</div>
+
               <label>Città</label>
-              <input name="ship_city" required>
+              <input id="ship_city" name="ship_city" required
+                     pattern="[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,60}">
+              <div class="error" id="err_ship_city">Inserisci una città valida (solo lettere/spazi/trattini).</div>
+
               <label>CAP</label>
-              <input name="ship_zip" required>
+              <input id="ship_zip" name="ship_zip" required inputmode="numeric" pattern="\d{5}" maxlength="5" placeholder="Es. 00100">
+              <div class="error" id="err_ship_zip">CAP non valido (5 cifre).</div>
+
+              <label>Telefono</label>
+              <input id="ship_phone" name="ship_phone" placeholder="Es. 333 1234567" inputmode="tel">
+              <div class="error" id="err_ship_phone">Telefono non valido (7–15 cifre; niente lettere).</div>
             </fieldset>
 
             <fieldset style="margin-bottom:1rem;">
@@ -119,11 +138,16 @@ $shipping = 0.0; $vat = 0.0; $grand = $subtotal + $shipping + $vat;
               </select>
               <div id="cardFields" style="display:none; margin-top:.5rem;">
                 <label>Numero carta</label>
-                <input name="card_number" pattern="[0-9 ]{12,19}">
+                <input id="card_number" name="card_number" inputmode="numeric" placeholder="1234 5678 9012 3456">
+                <div class="error" id="err_card_number">Numero carta non valido.</div>
+
                 <label>Scadenza (MM/YY)</label>
-                <input name="card_exp" pattern="[0-9]{2}/[0-9]{2}">
+                <input id="card_exp" name="card_exp" placeholder="MM/YY">
+                <div class="error" id="err_card_exp">Scadenza non valida o già passata.</div>
+
                 <label>CVC</label>
-                <input name="card_cvc" pattern="[0-9]{3,4}">
+                <input id="card_cvc" name="card_cvc" inputmode="numeric" placeholder="3 o 4 cifre" maxlength="4">
+                <div class="error" id="err_card_cvc">CVC non valido.</div>
               </div>
             </fieldset>
 
@@ -166,6 +190,90 @@ $shipping = 0.0; $vat = 0.0; $grand = $subtotal + $shipping + $vat;
     const cardFields = document.getElementById('cardFields');
     function toggleCard(){ cardFields.style.display = pm.value === 'card' ? 'block' : 'none'; }
     if (pm) { pm.addEventListener('change', toggleCard); toggleCard(); }
+
+    // helpers error UI
+    function setErr(el, msgId){
+      el.classList.add('invalid');
+      const e = document.getElementById(msgId);
+      if (e) e.style.display = 'block';
+    }
+    function clrErr(el, msgId){
+      el.classList.remove('invalid');
+      const e = document.getElementById(msgId);
+      if (e) e.style.display = 'none';
+    }
+
+    // Luhn check per carta
+    function luhn(num){
+      let sum = 0, alt = false;
+      for (let i = num.length - 1; i >= 0; i--) {
+        let n = parseInt(num[i], 10);
+        if (alt) { n *= 2; if (n > 9) n -= 9; }
+        sum += n; alt = !alt;
+      }
+      return sum % 10 === 0;
+    }
+
+    document.getElementById('checkoutForm')?.addEventListener('submit', function(ev){
+      let ok = true;
+
+      const name = document.getElementById('ship_name');
+      const addr = document.getElementById('ship_addr');
+      const city = document.getElementById('ship_city');
+      const zip  = document.getElementById('ship_zip');
+      const phone= document.getElementById('ship_phone');
+
+      // Nome: solo lettere, spazi, apostrofi
+      const reName = /^[A-Za-zÀ-ÖØ-öø-ÿ' ]{2,60}$/;
+      if (!reName.test(name.value.trim())) { setErr(name,'err_ship_name'); ok=false; } else { clrErr(name,'err_ship_name'); }
+
+      // Indirizzo: minimo 6 char
+      if (addr.value.trim().length < 6) { setErr(addr,'err_ship_addr'); ok=false; } else { clrErr(addr,'err_ship_addr'); }
+
+      // Città
+      const reCity = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,60}$/;
+      if (!reCity.test(city.value.trim())) { setErr(city,'err_ship_city'); ok=false; } else { clrErr(city,'err_ship_city'); }
+
+      // CAP: 5 cifre
+      if (!/^\d{5}$/.test(zip.value.trim())) { setErr(zip,'err_ship_zip'); ok=false; } else { clrErr(zip,'err_ship_zip'); }
+
+      // Telefono: niente lettere; 7–15 cifre contando solo i numeri
+      const hasLetters = /[A-Za-z]/.test(phone.value);
+      const digits = (phone.value.match(/\d/g) || []).length;
+      if (phone.value && (hasLetters || digits < 7 || digits > 15)) {
+        setErr(phone,'err_ship_phone'); ok=false;
+      } else { clrErr(phone,'err_ship_phone'); }
+
+      // Pagamento carta
+      if (pm.value === 'card') {
+        const cn = document.getElementById('card_number');
+        const exp= document.getElementById('card_exp');
+        const cvc= document.getElementById('card_cvc');
+
+        const raw = cn.value.replace(/\s+/g,'');
+        if (!/^\d{12,19}$/.test(raw) || !luhn(raw)) { setErr(cn,'err_card_number'); ok=false; } else { clrErr(cn,'err_card_number'); }
+
+        // scadenza MM/YY futura
+        const m = /^(\d{2})\/(\d{2})$/.exec(exp.value.trim());
+        if (!m) { setErr(exp,'err_card_exp'); ok=false; }
+        else {
+          let mm = parseInt(m[1],10), yy = parseInt(m[2],10);
+          if (mm < 1 || mm > 12) { setErr(exp,'err_card_exp'); ok=false; }
+          else {
+            // fine mese 20yy
+            const now = new Date();
+            const year = 2000 + yy;
+            const lastDay = new Date(year, mm, 0); // ultimo giorno mese mm
+            const endOfMonth = new Date(year, mm-1, lastDay.getDate(), 23,59,59,999);
+            if (endOfMonth < now) { setErr(exp,'err_card_exp'); ok=false; } else { clrErr(exp,'err_card_exp'); }
+          }
+        }
+
+        if (!/^\d{3,4}$/.test(cvc.value.trim())) { setErr(cvc,'err_card_cvc'); ok=false; } else { clrErr(cvc,'err_card_cvc'); }
+      }
+
+      if (!ok) ev.preventDefault();
+    });
   </script>
 
   <?php include __DIR__ . "/../../templates/footer/footer.html"; ?>
