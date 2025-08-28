@@ -1,57 +1,162 @@
 <?php
-// public/notifications/index.php
+// public/notifications/index.php (restyled to match Orders page)
 require_once __DIR__ . '/../bootstrap.php'; // session + $BASE + $conn
 $userId = current_user_id();
 if ($userId <= 0) { header("Location: {$BASE}/public/auth/login.php"); exit; }
 
-// Lista notifiche più recenti dell'utente
-$stmt = $conn->prepare("SELECT id, product_id, type, message, is_read, created_at FROM notification WHERE user_id=? ORDER BY created_at DESC");
+// Fetch notifications for this user
+$stmt = $conn->prepare("
+  SELECT id, product_id, type, message, link, is_read, created_at
+  FROM notification
+  WHERE user_id=?
+  ORDER BY created_at DESC
+");
 $stmt->bind_param('i', $userId);
 $stmt->execute();
 $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
+// Prefetch product titles (optional)
+$productTitles = [];
+$productIds = array_values(array_unique(array_filter(array_map(function($r){ return (int)($r['product_id'] ?? 0); }, $rows))));
+if ($productIds) {
+  // Build IN list safely
+  $in = implode(',', array_fill(0, count($productIds), '?'));
+  $types = str_repeat('i', count($productIds));
+  $sql = "SELECT id, title FROM product WHERE id IN ($in)";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param($types, ...$productIds);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  while ($r = $res->fetch_assoc()) {
+    $productTitles[(int)$r['id']] = (string)$r['title'];
+  }
+  $stmt->close();
+}
+
+// Helper to humanize type
+function humanize_type(string $t): string {
+  $t = trim($t);
+  if ($t === '') return 'Notifica';
+  $t = str_replace(['_', '-'], ' ', strtolower($t));
+  return ucfirst($t);
+}
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
   <link rel="icon" type="image/svg+xml" href="<?= $BASE ?>/assets/icons/logo.svg">
   <link rel="shortcut icon" href="<?= $BASE ?>/assets/icons/mountain.svg">
 
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Notifiche</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Base styles -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/notification.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
+
+  <!-- Reuse Orders look & feel -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/orders.css">
+
+  <!-- Notification-specific tweaks -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/notification.css">
+
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css"><!-- arrow back -->
+
+  <!-- Enforce responsive grid similar to My Orders -->
+  <style>
+    section.page{ margin:70px auto 24px; max-width:1280px; width:100%; padding:0 16px; }
+    .orders-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; align-items:stretch; }
+    @media (max-width:560px){ .orders-grid{ grid-template-columns:1fr; } }
+    .notif-card .order-total{ font-weight:600; color:#334; opacity:.9; }
+  </style>
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
 <?php include __DIR__ . "/../../templates/components/back.php"; ?>
 
-<section class="container">
+<section class="page">
   <h1>Notifiche</h1>
-  <?php if (!$rows): ?>
+
+  <?php if (empty($rows)): ?>
     <p>Nessuna notifica.</p>
   <?php else: ?>
-    <ul class="notifications">
+    <div class="orders orders-grid">
       <?php foreach ($rows as $n): ?>
-        <li class="notif <?= $n['is_read'] ? 'read' : 'unread' ?>">
-          <div class="msg"><?= $n['message'] ?></div>
-          <div class="meta">
-            <small><?= htmlspecialchars($n['type']) ?> • <?= htmlspecialchars($n['created_at']) ?></small>
-            <?php if (!$n['is_read']): ?>
-              <form method="post" action="<?= $BASE ?>/public/notifications/mark_read.php" style="display:inline">
-                <input type="hidden" name="id" value="<?= (int)$n['id'] ?>">
-                <button class="btn-secondary">Segna come letta</button>
-              </form>
+        <?php
+          $nid   = (int)$n['id'];
+          $pid   = (int)($n['product_id'] ?? 0);
+          $type  = (string)($n['type'] ?? '');
+          $title = humanize_type($type);
+          $msg   = (string)($n['message'] ?? '');
+          $link  = (string)($n['link'] ?? '');
+          $isr   = (int)($n['is_read'] ?? 0) === 1;
+          $when  = (string)($n['created_at'] ?? '');
+
+          $prodTitle = $pid > 0 ? ($productTitles[$pid] ?? ("Prodotto #{$pid}")) : '';
+          $prodUrl   = $pid > 0 ? ($BASE . "/public/products/details.php?id=" . $pid) : '';
+        ?>
+        <article class="order-card notif-card <?= $isr ? 'read' : 'unread' ?>">
+          <div class="order-head">
+            <div class="order-title">
+              <?= htmlspecialchars($title) ?>
+              <?php if (!$isr): ?><span class="badge">Non letta</span><?php endif; ?>
+            </div>
+            <div class="order-total">
+              <?= htmlspecialchars($when) ?>
+            </div>
+          </div>
+
+          <div class="order-meta">
+            <?php if ($prodTitle): ?>
+              <span>Prodotto: </span>
+              <?php if ($prodUrl): ?>
+                <a href="<?= htmlspecialchars($prodUrl) ?>" class="link"><?= htmlspecialchars($prodTitle) ?></a>
+              <?php else: ?>
+                <?= htmlspecialchars($prodTitle) ?>
+              <?php endif; ?>
             <?php endif; ?>
           </div>
-        </li>
+
+          <div class="order-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Messaggio</th>
+                  <th class="right">Azione</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><?= htmlspecialchars($msg) ?></td>
+                  <td class="right">
+                    <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+                      <?php if ($link): ?>
+                        <a href="<?= htmlspecialchars($link) ?>" class="btn-link">Apri</a>
+                      <?php elseif ($prodUrl): ?>
+                        <a href="<?= htmlspecialchars($prodUrl) ?>" class="btn-link">Vedi prodotto</a>
+                      <?php endif; ?>
+                      <?php if (!$isr): ?>
+                        <form method="post" action="<?= $BASE ?>/public/notifications/mark_read.php" style="display:inline">
+                          <input type="hidden" name="id" value="<?= $nid ?>">
+                          <button type="submit" class="btn-mark-read">Segna come letta</button>
+                        </form>
+                      <?php else: ?>
+                        <small class="muted">Letta</small>
+                      <?php endif; ?>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
       <?php endforeach; ?>
-    </ul>
+    </div>
   <?php endif; ?>
 </section>
 
