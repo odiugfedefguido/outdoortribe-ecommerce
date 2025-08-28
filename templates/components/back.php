@@ -1,6 +1,6 @@
 <?php
 // templates/components/back.php
-// Sticky "Indietro" bar shown under header on all pages except Home.
+
 if (!isset($BASE) || $BASE === '') { include __DIR__ . '/../../public/config_path.php'; }
 
 $script   = $_SERVER['SCRIPT_NAME'] ?? '';

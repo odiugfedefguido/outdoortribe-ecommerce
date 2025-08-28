@@ -1,7 +1,5 @@
 <?php
-/* public/config_path.php
- * Calcola il BASE di progetto (es. /outdoortribe-ecommerce) sia da /public/* che da /admin/*
- */
+
 $script = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\','/', $_SERVER['SCRIPT_NAME']) : '';
 $BASE = '';
 

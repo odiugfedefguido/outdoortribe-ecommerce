@@ -59,7 +59,7 @@ $stmt->close();
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/catalog.css"><!-- ultimo -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/catalog.css">
 </head>
 <body>
 <?php include __DIR__ . "/../templates/header/header.html"; ?>
@@ -67,7 +67,7 @@ $stmt->close();
 <section class="page">
   <h1>Prodotti</h1>
 
-  <!-- Ricerca SOLO in home -->
+  
   <form method="get" class="searchbar">
     <input type="text" name="q" placeholder="Cerca..." value="<?= htmlspecialchars($q) ?>">
     <select name="cat">

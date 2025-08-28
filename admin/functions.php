@@ -1,11 +1,4 @@
 <?php
-/* 
- * File: admin/functions.php
- * Scopo: Funzioni comuni e utilità, inclusi controlli di autenticazione (checkLogin).
- * Stato: RIUSO (codice copiato dal progetto OutdoorTribe).
- * ------------------------------------------------------------------
- */
-
 
 // Funzione per controllare se l'utente è autenticato
 function checkLogin($conn)

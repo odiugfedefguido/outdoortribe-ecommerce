@@ -36,7 +36,7 @@ function humanize_type(string $t): string {
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/orders.css"><!-- riuso stile card ordini -->
+  <link rel="stylesheet" href="<?= $BASE ?>/public/styles/orders.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
 
   <style>
@@ -47,7 +47,7 @@ function humanize_type(string $t): string {
     /* evidenzia carte non lette */
     .orders .notif-card.unread{ border-color: rgba(11,78,169,.35); box-shadow: 0 8px 22px rgba(11,78,169,.08); }
 
-    /* Bottoni ad alto contrasto (coerenti col carrello) */
+
     .btn{
       appearance:none; border:0; border-radius:12px;
       padding:10px 14px; font-weight:800; line-height:1; cursor:pointer;

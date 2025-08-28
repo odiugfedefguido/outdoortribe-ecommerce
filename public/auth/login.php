@@ -48,24 +48,18 @@ $next = $_GET['next'] ?? ($BASE . '/public/');
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Accedi</title>
 
-  <!-- CSS globali -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 
-  <!-- CSS specifico login/signup (layout immagine a fianco) -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/login.css">
 
-  <!-- Font (opzionale) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="auth-no-header"><!-- classe che rimuove margine top -->
-
-  <!-- NIENTE header/back qui -->
-
+<body class="auth-no-header">
   <main class="auth-login">
     <div class="auth-login__card">
       <aside class="auth-login__image">

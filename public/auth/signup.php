@@ -60,22 +60,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Registrazione</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <!-- CSS globali -->
+ 
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
 
-  <!-- Stesso stile del login -->
+
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/login.css">
 
-  <!-- Font (opzionale) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <style>
-    /* UI errori client-side */
+ 
     .invalid{ border-color:#a10a0a !important; background:#ffecec; }
     .intro-error{ color:#a10a0a; margin-top:6px; }
     .client-error{ display:none; }
@@ -102,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
         </div>
 
-        <!-- novalidate per messaggi custom -->
+      
         <form id="signupForm" method="post" class="auth-login__fields" novalidate>
           <label class="field">
             <span class="field__label">Nome</span>

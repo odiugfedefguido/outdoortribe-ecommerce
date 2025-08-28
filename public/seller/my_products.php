@@ -28,7 +28,6 @@ $stmt->close();
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>I miei prodotti</title>
 
-  <!-- CSS corretti come nelle altre pagine -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/styles.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/main.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
@@ -37,7 +36,7 @@ $stmt->close();
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
 
   <style>
-    /* qualche rifinitura per la tabella */
+   
     section.page{ margin:70px auto 24px; max-width:1280px; padding:0 16px; }
     table.products{ width:100%; border-collapse:collapse; margin-top:12px; }
     table.products th, table.products td{ padding:10px 12px; border-bottom:1px solid #edf1ef; text-align:left; }

@@ -4,7 +4,6 @@ require_once __DIR__ . '/../bootstrap.php';  // login obbligatorio + $BASE + $co
 
 $userId = current_user_id();
 
-// 1) PULIZIA: rimuovi dal MIO carrello prodotti non più acquistabili
 $stmt = $conn->prepare(
   "DELETE ci FROM cart_item ci
    JOIN product p ON p.id = ci.product_id
@@ -14,7 +13,6 @@ $stmt->bind_param('i', $userId);
 $stmt->execute();
 $stmt->close();
 
-// 2) Carrello “pulito”: mostra solo prodotti attivi e con stock > 0
 $sql = "SELECT ci.product_id, ci.qty, p.title, p.price, p.currency, p.stock
         FROM cart_item ci
         JOIN product p ON p.id = ci.product_id

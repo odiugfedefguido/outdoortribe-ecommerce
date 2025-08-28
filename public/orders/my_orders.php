@@ -2,7 +2,7 @@
 // public/orders/my_orders.php
 require_once __DIR__ . '/../bootstrap.php';
 
-/* ---------- Utils ---------- */
+
 function bt(string $name): string { return '`' . str_replace('`','``',$name) . '`'; }
 function pick_table(mysqli $conn, array $candidates): string {
   $names = implode("','", array_map([$conn,'real_escape_string'], $candidates));
@@ -29,13 +29,11 @@ function pick_col_expr(mysqli $conn, string $table, array $candidates, string $a
   return "$defaultExpr AS " . bt($alias);
 }
 
-/* ---------- Tabelle reali ---------- */
 $ordersTbl = pick_table($conn, ['orders','order']);
 $itemsTbl  = pick_table($conn, ['order_items','order_item']);
 $O = bt($ordersTbl);
 $I = bt($itemsTbl);
 
-/* ---------- SELECT ordini con sole colonne esistenti ---------- */
 $statusExpr   = pick_col_expr($conn, $ordersTbl, ['status'],                         'status',     "'placed'");
 $subtotalExpr = pick_col_expr($conn, $ordersTbl, ['subtotal','subtotal_price'],      'subtotal',   "0");
 $shipExpr     = pick_col_expr($conn, $ordersTbl, ['shipping','shipping_price','shipping_cost'], 'shipping', "0");
@@ -64,7 +62,7 @@ $stmt->execute();
 $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-/* ---------- Righe ordine ---------- */
+
 function fetch_items(mysqli $conn, string $itemsTbl, int $orderId): array {
   $titleExpr = pick_col_expr($conn, $itemsTbl, ['title','product_title','title_snapshot','name'], 'title', "''");
   $qtyExpr   = pick_col_expr($conn, $itemsTbl, ['qty','quantity','qty_ordered'],                 'qty',   "0");
@@ -94,9 +92,7 @@ function fetch_items(mysqli $conn, string $itemsTbl, int $orderId): array {
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/orders.css">
-  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css"><!-- per la freccia -->
-
-  <!-- Forza griglia responsive anche se altri CSS provano a sovrascrivere -->
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css">
   <style>
     section.page{ margin:70px auto 24px; max-width:1280px; width:100%; padding:0 16px; }
     .orders-grid{
@@ -110,8 +106,7 @@ function fetch_items(mysqli $conn, string $itemsTbl, int $orderId): array {
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
-<?php include __DIR__ . "/../../templates/components/back.php"; ?>  <!-- <<< FRECCIA INDietro QUI -->
-
+<?php include __DIR__ . "/../../templates/components/back.php"; ?>  
 <section class="page">
   <h1>I miei ordini</h1>
 
