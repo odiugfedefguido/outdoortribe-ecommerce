@@ -1,15 +1,6 @@
 <?php
 // public/notifications/delete.php
-
 require_once __DIR__ . '/../bootstrap.php';
-
-// Fallback funzioni se mancassero
-if (!function_exists('current_user_id')) {
-  if (session_status() !== PHP_SESSION_ACTIVE) session_start();
-  function current_user_id(): int { return (int)($_SESSION['user_id'] ?? 0); }
-  function current_user_role(): string { return (string)($_SESSION['user_role'] ?? ''); }
-}
-
 $uid = current_user_id();
 if ($uid <= 0) { header("Location: {$BASE}/public/auth/login.php"); exit; }
 
