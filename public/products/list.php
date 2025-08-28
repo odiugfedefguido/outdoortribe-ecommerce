@@ -21,10 +21,12 @@ $prods = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
   <link rel="stylesheet" href="<?= $BASE ?>/templates/components/components.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/header/header.css">
   <link rel="stylesheet" href="<?= $BASE ?>/templates/footer/footer.css">
+  <link rel="stylesheet" href="<?= $BASE ?>/templates/components/back.css"><!-- NEW -->
   <link rel="stylesheet" href="<?= $BASE ?>/public/styles/catalog.css"><!-- ultimo -->
 </head>
 <body>
 <?php include __DIR__ . "/../../templates/header/header.html"; ?>
+<?php include __DIR__ . "/../../templates/components/back.php"; ?><!-- NEW -->
 
 <section class="page">
   <h1>Catalogo</h1>
