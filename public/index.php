@@ -48,6 +48,9 @@ $stmt->close();
 <!DOCTYPE html>
 <html lang="it">
 <head>
+  <link rel="icon" type="image/svg+xml" href="<?= $BASE ?>/assets/icons/logo.svg">
+  <link rel="shortcut icon" href="<?= $BASE ?>/assets/icons/mountain.svg">
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OutdoorTribe · Home</title>

@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!doctype html>
 <html lang="it">
 <head>
+  <link rel="icon" type="image/svg+xml" href="<?= $BASE ?>/assets/icons/logo.svg">
+  <link rel="shortcut icon" href="<?= $BASE ?>/assets/icons/mountain.svg">
+
   <meta charset="utf-8">
   <title>Registrazione</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
