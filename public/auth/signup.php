@@ -73,10 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* UI errori client-side */
+    .invalid{ border-color:#a10a0a !important; background:#ffecec; }
+    .intro-error{ color:#a10a0a; margin-top:6px; }
+    .client-error{ display:none; }
+  </style>
 </head>
 <body class="auth-no-header">
-
-  <!-- NIENTE header/back qui -->
 
   <main class="auth-login">
     <div class="auth-login__card">
@@ -97,29 +102,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
         </div>
 
-        <form method="post" class="auth-login__fields">
+        <!-- novalidate per messaggi custom -->
+        <form id="signupForm" method="post" class="auth-login__fields" novalidate>
           <label class="field">
             <span class="field__label">Nome</span>
-            <input class="field__input" type="text" name="name" value="<?= htmlspecialchars($name) ?>">
+            <input id="name" class="field__input" type="text" name="name"
+                   value="<?= htmlspecialchars($name) ?>"
+                   required
+                   pattern="[A-Za-zÀ-ÖØ-öø-ÿ' ]{2,60}"
+                   placeholder="Es. Mario Rossi">
             <?php if (!empty($errors['name'])): ?><small class="intro-error"><?= htmlspecialchars($errors['name']) ?></small><?php endif; ?>
+            <small id="err_name" class="intro-error client-error">Inserisci un nome valido (solo lettere/spazi/apostrofi, 2–60 caratteri).</small>
           </label>
 
           <label class="field">
             <span class="field__label">Email</span>
-            <input class="field__input" type="email" name="email" value="<?= htmlspecialchars($email) ?>">
+            <input id="email" class="field__input" type="email" name="email"
+                   value="<?= htmlspecialchars($email) ?>" required>
             <?php if (!empty($errors['email'])): ?><small class="intro-error"><?= htmlspecialchars($errors['email']) ?></small><?php endif; ?>
+            <small id="err_email" class="intro-error client-error">Inserisci un’email valida.</small>
           </label>
 
           <label class="field">
             <span class="field__label">Password</span>
-            <input class="field__input" type="password" name="password">
+            <input id="password" class="field__input" type="password" name="password" required minlength="8" placeholder="Minimo 8 caratteri">
             <?php if (!empty($errors['password'])): ?><small class="intro-error"><?= htmlspecialchars($errors['password']) ?></small><?php endif; ?>
+            <small id="err_password" class="intro-error client-error">La password deve avere almeno 8 caratteri e contenere almeno una lettera e un numero.</small>
           </label>
 
           <label class="field">
             <span class="field__label">Ripeti password</span>
-            <input class="field__input" type="password" name="password2">
+            <input id="password2" class="field__input" type="password" name="password2" required>
             <?php if (!empty($errors['password2'])): ?><small class="intro-error"><?= htmlspecialchars($errors['password2']) ?></small><?php endif; ?>
+            <small id="err_password2" class="intro-error client-error">Le password non coincidono.</small>
           </label>
 
           <div class="field" style="display:flex; align-items:center; gap:.5rem; margin-top:6px;">
@@ -129,8 +144,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <div id="admin_code_wrap" class="field" style="<?= $want_admin ? '' : 'display:none' ?>">
             <span class="field__label">Codice amministratore</span>
-            <input class="field__input" type="password" name="admin_code">
+            <input id="admin_code" class="field__input" type="password" name="admin_code" <?= $want_admin ? 'required' : '' ?>>
             <?php if (!empty($errors['admin_code'])): ?><small class="intro-error"><?= htmlspecialchars($errors['admin_code']) ?></small><?php endif; ?>
+            <small id="err_admin_code" class="intro-error client-error">Inserisci il codice amministratore.</small>
           </div>
 
           <div class="auth-login__actions">
@@ -145,9 +161,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php include dirname(__DIR__,2) . "/templates/footer/footer.html"; ?>
 
   <script>
+    // toggle admin code
     const cb = document.getElementById('want_admin');
     const wrap = document.getElementById('admin_code_wrap');
-    if (cb) cb.addEventListener('change', () => { wrap.style.display = cb.checked ? '' : 'none'; });
+    const adminCode = document.getElementById('admin_code');
+    if (cb) cb.addEventListener('change', () => {
+      const on = cb.checked;
+      wrap.style.display = on ? '' : 'none';
+      if (adminCode) {
+        adminCode.required = on;
+        if (!on) { adminCode.value=''; hide('err_admin_code'); adminCode.classList.remove('invalid'); }
+      }
+    });
+
+    // helpers UI
+    const show = id => { const e=document.getElementById(id); if(e) e.style.display='block'; };
+    const hide = id => { const e=document.getElementById(id); if(e) e.style.display='none'; };
+    function invalid(el, errId){ el.classList.add('invalid'); show(errId); }
+    function valid(el, errId){ el.classList.remove('invalid'); hide(errId); }
+
+    // regole
+    const reName = /^[A-Za-zÀ-ÖØ-öø-ÿ' ]{2,60}$/;
+    function passwordStrong(p){ return p.length>=8 && /[A-Za-z]/.test(p) && /\d/.test(p); }
+
+    // validazione submit
+    document.getElementById('signupForm')?.addEventListener('submit', function(ev){
+      const name = document.getElementById('name');
+      const email = document.getElementById('email');
+      const p1 = document.getElementById('password');
+      const p2 = document.getElementById('password2');
+
+      let ok = true;
+
+      if (!reName.test((name.value||'').trim())) { invalid(name,'err_name'); ok=false; } else { valid(name,'err_name'); }
+
+      if (!email.checkValidity()) { invalid(email,'err_email'); ok=false; } else { valid(email,'err_email'); }
+
+      if (!passwordStrong(p1.value||'')) { invalid(p1,'err_password'); ok=false; } else { valid(p1,'err_password'); }
+
+      if ((p1.value||'') !== (p2.value||'')) { invalid(p2,'err_password2'); ok=false; } else { valid(p2,'err_password2'); }
+
+      if (cb && cb.checked) {
+        if (!adminCode.value.trim()) { invalid(adminCode,'err_admin_code'); ok=false; } else { valid(adminCode,'err_admin_code'); }
+      }
+
+      if (!ok) ev.preventDefault();
+    });
+
+    // clear error on input
+    ['name','email','password','password2','admin_code'].forEach(id=>{
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', ()=>{
+        const map = {
+          name:['err_name', v=>reName.test((v||'').trim())],
+          email:['err_email', v=>document.getElementById('email').checkValidity()],
+          password:['err_password', v=>passwordStrong(v||'')],
+          password2:['err_password2', v=>(document.getElementById('password').value||'')=== (v||'')],
+          admin_code:['err_admin_code', v=>!cb || !cb.checked || !!(v||'').trim()]
+        };
+        const [errId, okFn] = map[id];
+        if (okFn(el.value)) valid(el,errId); else invalid(el,errId);
+      });
+    });
   </script>
 </body>
 </html>
